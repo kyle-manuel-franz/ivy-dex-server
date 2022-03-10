@@ -2,5 +2,25 @@
   "dependencies": {
     "config": "^3.3.7",
     "express": "^4.17.3"
-  }
+  },
+  "name": "ivy-dex-server",
+  "description": "Server side application to support ivy dex.",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:docker": "sudo docker-compose -f env/docker-compose.testnet.dev.yml up",
+    "start:docker:mainnet": "echo \"Have not setup script\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kyle-manuel-franz/ivy-dex-server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kyle-manuel-franz/ivy-dex-server/issues"
+  },
+  "homepage": "https://github.com/kyle-manuel-franz/ivy-dex-server#readme"
 }
