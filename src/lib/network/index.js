@@ -1,0 +1,1 @@
+module.exports = process.env.SERVER_NETWORK || 'testnet'
