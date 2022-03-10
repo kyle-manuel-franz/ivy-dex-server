@@ -3,7 +3,6 @@ const mongoose = require('mongoose')
 const network = require('../network')
 
 const dbConfig = config.smartContractIndexMongoDb[network]
-
 const mongoDb = `mongodb://${dbConfig.location}`
 
 const initializeMongoDbConnection = () => {
