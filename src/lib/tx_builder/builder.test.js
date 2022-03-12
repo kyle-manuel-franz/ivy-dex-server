@@ -27,7 +27,8 @@ test('getSpendingUtxos find utxos to cover specified token name amount', () => {
     const token_name = getRandomShaHash()
 
     for(let i = 0; i < 10; i++){
-        const amount = [{
+        const amount = [
+            {
                 unit: "lovelace",
                 quantity: "10000"
             },
