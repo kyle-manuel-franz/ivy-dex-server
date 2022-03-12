@@ -3,23 +3,40 @@ const { Buffer } = require("buffer")
 const toHex = (bytes) => Buffer.from(bytes).toString("hex");
 const fromHex = (hex) => Buffer.from(hex, "hex");
 
-// TODO: finish this up and verify the values are equal to what is in the
-// smart contract cardano-cli hash script datum from json file
-
 const mkSerializedOrderDatum = (
     odOwner,
     odBook,
-    odBuyerValueTokenName,
-    odBuyerValueTokenAmount,
-    odBuyerValueCurrencySymbol,
-    odSellerValueTokenName,
-    odSellerValueTokenAmount,
-    odSellerValueCurrencySymbol
+
+    odBuyerTokenName,
+    odBuyerCurrencySymbol,
+    odBuyerTokenAmount,
+
+    odSellerTokenName,
+    odSellerCurrencySymbol,
+    odSellerTokenAmount,
 ) => {
-
     const fieldList = slib.PlutusList.new()
-    fieldList.add(toHex(odOwner))
-    fieldList.add(toHex(odBook))
+    fieldList.add(slib.PlutusData.new_bytes(fromHex(odOwner)))
+    fieldList.add(slib.PlutusData.new_bytes(fromHex(odBook)))
 
+    fieldList.add(slib.PlutusData.new_bytes(fromHex(odBuyerTokenName)))
+    fieldList.add(slib.PlutusData.new_bytes(fromHex(odBuyerCurrencySymbol)))
+    fieldList.add(slib.PlutusData.new_integer(slib.BigInt.from_str(odBuyerTokenAmount)))
 
+    fieldList.add(slib.PlutusData.new_bytes(fromHex(odSellerTokenName)))
+    fieldList.add(slib.PlutusData.new_bytes(fromHex(odSellerCurrencySymbol)))
+    fieldList.add(slib.PlutusData.new_integer(slib.BigInt.from_str(odSellerTokenAmount)))
+
+    const datumConstructor = slib.PlutusData.new_constr_plutus_data(
+        slib.ConstrPlutusData.new(
+            slib.BigNum.from_str("0"),
+            fieldList
+        )
+    )
+
+    return datumConstructor
+}
+
+module.exports = {
+    mkSerializedOrderDatum
 }
