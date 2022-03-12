@@ -1,7 +1,5 @@
 const utxoModel = require('../model')
-const crypto = require('crypto')
-
-const getRandomShaHash = () => crypto.createHash('sha256').update((new Date()).toISOString()).digest('hex')
+const { getRandomShaHash } = require('../../../lib/utils')
 
 const createMockUtxo = ({ address, tx_hash, output_index, block, data_hash, amount }) => {
     return new utxoModel({
