@@ -15,6 +15,10 @@ const mkSerializedOrderDatum = (
     odSellerCurrencySymbol,
     odSellerTokenAmount,
 ) => {
+    // The order in which we add fields to this list is very important
+    // it must match exactly the order in which the fields are defined
+    // in the OrderDatum in the Haskell smart contract
+
     const fieldList = slib.PlutusList.new()
     fieldList.add(slib.PlutusData.new_bytes(fromHex(odOwner)))
     fieldList.add(slib.PlutusData.new_bytes(fromHex(odBook)))
