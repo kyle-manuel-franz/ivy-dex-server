@@ -5,6 +5,7 @@
     "buffer": "^6.0.3",
     "config": "^3.3.7",
     "express": "^4.17.3",
+    "lodash": "^4.17.21",
     "mongoose": "^6.2.5"
   },
   "name": "ivy-dex-server",
