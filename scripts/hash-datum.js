@@ -17,8 +17,8 @@ const hashDatum = datum => {
 const odOwner = toHex('c2ff616e11299d9094ce0a7eb5b7284b705147a822f4ffbd471f971a')
 const odBook = toHex('c2ff616e11299d9094ce0a7eb5b7284b705147a822f4ffbd471f971a')
 
-const odBuyerTokenName = toHex('ABC')
-const odBuyerCurrencySymbol = 'c2ff616e11299d9094ce0a7eb5b7284b705147a822f4ffbd471f971a'
+const odBuyerTokenName = toHex('')
+const odBuyerCurrencySymbol = ''
 const odBuyerTokenAmount = "10000"
 
 const odSellerTokenName = toHex('XYZ')
