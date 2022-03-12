@@ -14,3 +14,12 @@
     Take Order
 
  */
+
+const build = (a, b) => {
+    return a + b
+}
+
+
+module.exports = {
+    build
+}

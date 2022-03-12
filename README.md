@@ -12,3 +12,8 @@ In order for our server to run, we start our dependent services using:
 `npm run start:docker`
 
 This will start required databases and other monitoring services.
+
+
+## Running Tests
+
+`npm run test`

@@ -12,7 +12,7 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "sudo node src/index.js",
     "start:docker": "sudo docker-compose -f env/docker-compose.testnet.dev.yml up",
     "start:docker:mainnet": "echo \"Have not setup script\""
@@ -26,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/kyle-manuel-franz/ivy-dex-server/issues"
   },
-  "homepage": "https://github.com/kyle-manuel-franz/ivy-dex-server#readme"
+  "homepage": "https://github.com/kyle-manuel-franz/ivy-dex-server#readme",
+  "devDependencies": {
+    "jest": "^27.5.1"
+  }
 }
