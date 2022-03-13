@@ -3,6 +3,23 @@ const { Buffer } = require("buffer")
 const toHex = (bytes) => Buffer.from(bytes).toString("hex");
 const fromHex = (hex) => Buffer.from(hex, "hex");
 
+const hashDatum = orderDatum => {
+    const datum = mkSerializedOrderDatum(
+        orderDatum.odOwner,
+        orderDatum.odBook,
+
+        orderDatum.odBuyerTokenName,
+        orderDatum.odBuyerCurrencySymbol,
+        orderDatum.odBuyerTokenAmount,
+
+        orderDatum.odSellerTokenName,
+        orderDatum.odSellerCurrencySymbol,
+        orderDatum.odSellerTokenAmount
+    )
+    const res = slib.hash_plutus_data(datum)
+    return toHex(res.to_bytes())
+}
+
 const mkSerializedOrderDatum = (
     odOwner,
     odBook,
@@ -42,5 +59,6 @@ const mkSerializedOrderDatum = (
 }
 
 module.exports = {
-    mkSerializedOrderDatum
+    mkSerializedOrderDatum,
+    hashDatum
 }

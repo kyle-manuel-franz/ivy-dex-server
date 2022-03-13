@@ -83,14 +83,14 @@ test("createOutputUtxosForPlaceOrderDatum builds proper place order case output 
 
         odBuyerTokenName: buyerValue.tokenName,
         odBuyerCurrencySymbol: buyerValue.tokenCurrencySymbol,
-        odBuyerTokenAmount: buyerValue.tokenAmount,
+        odBuyerTokenAmount: buyerValue.tokenAmount.toString(),
 
         odSellerTokenName: sellerValue.tokenName,
         odSellerCurrencySymbol: sellerValue.tokenCurrencySymbol,
-        odSellerTokenAmount: sellerValue.tokenAmount
+        odSellerTokenAmount: sellerValue.tokenAmount.toString()
     }
 
-    const outputUtxos = Builder.createOutputUtxosForPlaceOrderDatum(orderDatum)
+    const outputUtxos = Builder.createTxOutputsForPlaceOrderDatum(orderDatum)
 
     console.log(outputUtxos)
 })

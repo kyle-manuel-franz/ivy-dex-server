@@ -16,6 +16,10 @@ module.exports = {
         password: process.env.CARDANO_SYNC_DB_PASSWORD
     },
     port : process.env.PORT || 3001,
+    scriptAddress: {
+      mainnet: process.env.ORDER_ADDRESS_MAINNET || '',
+      testnet: process.env.ORDER_ADDRESS_TESTNET || ''
+    },
     smartContractIndexMongoDb: {
         mainnet: {},
         testnet: {
