@@ -59,39 +59,24 @@ const sumUxtosForUnit = (utxos, unit = "lovelace") => {
     return sum
 }
 
-const createTxOutputsForPlaceOrderDatum = orderDatum => {
-    const txOuts = []
-    // Need to construct utxo with output to script address of seller value
-    // Also need to place change in another UTXO with left over value
-    const {
-        odOwner,
-        odSellerTokenName,
-        odSellerCurrencySymbol,
-        odSellerTokenAmount
-    } = orderDatum
-
+const createTxOutputForPlaceOrderDatum = orderDatum => {
     const datum_hash = hashDatum(orderDatum)
 
-    // txOut that locks funds in the script address
-    const txOutScript = new txOutModel({
+    return new txOutModel({
         address: SCRIPT_ADDRESS,
         amount: [{
-            unit: getUnitFromValueParts(odSellerTokenName, odSellerCurrencySymbol),
-            quantity: odSellerTokenAmount
+            unit: getUnitFromValueParts(
+                orderDatum.odSellerTokenName,
+                orderDatum.odSellerCurrencySymbol
+            ),
+            quantity: orderDatum.odSellerTokenAmount
         }],
         data_hash: datum_hash
     })
-
-    txOuts.push(txOutScript)
-
-
-
-
-    return txOuts
 }
 
 module.exports = {
     getSpendingUtxosForAmount,
-    createTxOutputsForPlaceOrderDatum,
+    createTxOutputForPlaceOrderDatum,
     sumUxtosForUnit
 }

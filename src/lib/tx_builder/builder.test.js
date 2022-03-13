@@ -2,6 +2,13 @@ const Builder = require('./index')
 const { createMockUtxo } = require('../../data/utxos/mock')
 const { getRandomShaHash } = require('../utils')
 
+const getMockLovelace = () => {
+    return {
+        tokenName: '',
+        tokenCurrencySymbol: '',
+        tokenAmount: 10000
+    }
+}
 const getMockValue = () => {
     return {
         tokenName: 'ABC',
@@ -74,8 +81,8 @@ test("createOutputUtxosForPlaceOrderDatum builds proper place order case output 
     const bookAddress = getRandomShaHash()
     const ownerAddress = getRandomShaHash()
 
-    const buyerValue = getMockValue()
-    const sellerValue = getMockValue()
+    const buyerValue = getMockLovelace()
+    const sellerValue = getMockLovelace()
 
     const orderDatum = {
         odOwner: ownerAddress,
@@ -90,7 +97,5 @@ test("createOutputUtxosForPlaceOrderDatum builds proper place order case output 
         odSellerTokenAmount: sellerValue.tokenAmount.toString()
     }
 
-    const outputUtxos = Builder.createTxOutputsForPlaceOrderDatum(orderDatum)
-
-    console.log(outputUtxos)
+    const outputUtxos = Builder.createTxOutputForPlaceOrderDatum(orderDatum)
 })
