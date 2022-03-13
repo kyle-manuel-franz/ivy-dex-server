@@ -35,11 +35,34 @@ const baseAddress = slib.BaseAddress.new(
     slib.StakeCredential.from_keyhash(stakeKey.to_raw_key().hash())
 );
 
+const mkTxBuilderConfig = pp => {
+    return slib.TransactionBuilderConfigBuilder.new()
+        .coins_per_utxo_word(
+            slib.BigNum.from_str(pp.coinsPerUtxoWord)
+        )
+        .fee_algo(
+            slib.LinearFee.new(
+                slib.BigNum.from_str(pp.linearFee.minFeeA),
+                slib.BigNum.from_str(pp.linearFee.minFeeB)
+            )
+        )
+        .key_deposit(slib.BigNum.from_str(pp.keyDeposit))
+        .pool_deposit(
+            slib.BigNum.from_str(pp.poolDeposit)
+        )
+        .max_tx_size(pp.maxTxSize)
+        .max_value_size(pp.maxValSize)
+        .prefer_pure_change(true)
+        .build()
+}
+
 (async () => {
     const bech32_address = baseAddress.to_address().to_bech32()
-    const info = await blockfrost.getSpecificAddress(bech32_address)
+    // const info = await blockfrost.getSpecificAddress(bech32_address)
     const pp = await blockfrost.fetchProtocolParameters()
+    const txBuilderConfig = mkTxBuilderConfig(pp)
 
-
+    const utxosAtAddress = await blockfrost.getUtxosForAddress(bech32_address)
+    console.log(utxosAtAddress)
 
 })()
