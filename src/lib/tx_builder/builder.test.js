@@ -105,9 +105,9 @@ test("createOutputUtxosForPlaceOrderDatum builds proper place order simple lovel
     const utxos = []
     for(let i = 0; i < 10; i++){
         const amount = [{
-            unit: "lovelace",
-            quantity: "10000"
-           },
+                unit: "lovelace",
+                quantity: "10000"
+            },
             {
                 unit: tokenName,
                 quantity: "10000"

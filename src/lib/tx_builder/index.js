@@ -15,14 +15,10 @@ const SCRIPT_ADDRESS = config.scriptAddress[network]
 /*
     Three Different Types of Transactions:
 
-    Place Order
-
-
     Cancel Order
 
 
     Take Order
-
  */
 
 const getUnitFromValueParts = (tokenName, tokenCurrencySymbol) => {
