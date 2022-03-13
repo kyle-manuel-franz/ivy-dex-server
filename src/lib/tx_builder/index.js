@@ -59,6 +59,36 @@ const sumUxtosForUnit = (utxos, unit = "lovelace") => {
     return sum
 }
 
+const sumUtxosAmounts = utxos => {
+    const totals = {}
+    for(let i = 0; i < utxos.length; i++){
+        const utxo = utxos[i]
+        for(let a = 0; a < utxo.amount.length; a++){
+            const amt = utxo.amount[a]
+            if(totals[amt.unit]) totals[amt.unit] += parseInt(amt.quantity)
+            else totals[amt.unit] = parseInt(amt.quantity)
+        }
+    }
+
+    return totals
+}
+
+const valuesDifference = (val1, val2) => {
+    const keys = _.uniq([...Object.keys(val1), ...Object.keys(val2)])
+
+    const diff = {}
+    for(let k = 0; k < keys.length; k++){
+        const key = keys[k]
+
+        const v1 = val1[key] || 0
+        const v2 = val2[key] || 0
+
+        diff[key] = (v1 - v2).toString()
+    }
+
+    return diff
+}
+
 const createTxOutputForPlaceOrderDatum = orderDatum => {
     const datum_hash = hashDatum(orderDatum)
 
@@ -75,8 +105,24 @@ const createTxOutputForPlaceOrderDatum = orderDatum => {
     })
 }
 
+const createRemainderTxOutForOutputs = (txOuts, spendingUtxos) => {
+    const address = spendingUtxos[0].address
+
+    const totalValuesIn = sumUtxosAmounts(spendingUtxos)
+    const totalValuesOut = sumUtxosAmounts(txOuts)
+
+    const remainderOut = valuesDifference(totalValuesIn, totalValuesOut)
+    const remainderAmounts = _.reduce(remainderOut, (acc, v, k) => [...acc, {unit: k, quantity: v}] , [] )
+
+    return new txOutModel({
+        address,
+        amount: remainderAmounts
+    })
+}
+
 module.exports = {
     getSpendingUtxosForAmount,
     createTxOutputForPlaceOrderDatum,
+    createRemainderTxOutForOutputs,
     sumUxtosForUnit
 }

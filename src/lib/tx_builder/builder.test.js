@@ -101,8 +101,29 @@ test("createOutputUtxosForPlaceOrderDatum builds proper place order simple lovel
         odSellerTokenAmount: sellerValue.tokenAmount.toString()
     }
 
-    const outputUtxo = Builder.createTxOutputForPlaceOrderDatum(orderDatum)
-    expect(outputUtxo.amount[0].quantity).toBe(orderDatum.odSellerTokenAmount)
-    expect(outputUtxo.amount[0].unit).toBe("lovelace")
-    expect(outputUtxo.address).toBe(SCRIPT_ADDRESS)
+    const tokenName = getRandomShaHash()
+    const utxos = []
+    for(let i = 0; i < 10; i++){
+        const amount = [{
+            unit: "lovelace",
+            quantity: "10000"
+           },
+            {
+                unit: tokenName,
+                quantity: "10000"
+            }
+        ]
+        const utxo = createMockUtxo({address: ownerAddress, amount})
+        utxos.push(utxo)
+    }
+
+    const placeScriptOutputUtxo = Builder.createTxOutputForPlaceOrderDatum(orderDatum)
+    expect(placeScriptOutputUtxo.amount[0].quantity).toBe(orderDatum.odSellerTokenAmount)
+    expect(placeScriptOutputUtxo.amount[0].unit).toBe("lovelace")
+    expect(placeScriptOutputUtxo.address).toBe(SCRIPT_ADDRESS)
+
+    const remainderTxOut = Builder.createRemainderTxOutForOutputs([placeScriptOutputUtxo], utxos)
+    console.log(remainderTxOut)
 })
+
+// TODO more balancing tests
