@@ -2,6 +2,14 @@ const Builder = require('./index')
 const { createMockUtxo } = require('../../data/utxos/mock')
 const { getRandomShaHash } = require('../utils')
 
+const getMockValue = () => {
+    return {
+        tokenName: 'ABC',
+        tokenCurrencySymbol: getRandomShaHash(),
+        tokenAmount: 10000
+    }
+}
+
 test('getSpendingUtxos find utxos to cover specified lovelace amount', () => {
     const address = "39a7a284c2a0948189dc45dec670211cd4d72f7b66c5726c08d9b3df11e44d58"
     const utxos = []
@@ -60,4 +68,29 @@ test("getSpendingUtxos throws error if it cannot find UTXOs to cover specified a
     expect(() => {
         Builder.getSpendingUtxosForAmount(utxos, 220000, "lovelace", 1000)
     }).toThrow("Could not find UTXOs to cover specified amounts")
+})
+
+test("createOutputUtxosForPlaceOrderDatum builds proper place order case output utxos", () => {
+    const bookAddress = getRandomShaHash()
+    const ownerAddress = getRandomShaHash()
+
+    const buyerValue = getMockValue()
+    const sellerValue = getMockValue()
+
+    const orderDatum = {
+        odOwner: ownerAddress,
+        odBook: bookAddress,
+
+        odBuyerTokenName: buyerValue.tokenName,
+        odBuyerCurrencySymbol: buyerValue.tokenCurrencySymbol,
+        odBuyerTokenAmount: buyerValue.tokenAmount,
+
+        odSellerTokenName: sellerValue.tokenName,
+        odSellerCurrencySymbol: sellerValue.tokenCurrencySymbol,
+        odSellerTokenAmount: sellerValue.tokenAmount
+    }
+
+    const outputUtxos = Builder.createOutputUtxosForPlaceOrderDatum(orderDatum)
+
+    console.log(outputUtxos)
 })

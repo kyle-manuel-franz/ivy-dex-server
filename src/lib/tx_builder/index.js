@@ -44,7 +44,15 @@ const sumUxtosForUnit = (utxos, unit = "lovelace") => {
     return sum
 }
 
+const createOutputUtxosForPlaceOrderDatum = orderDatum => {
+    // Need to construct utxo with output to script address of seller value
+    // Also need to place change in another UTXO with left over value
+
+    return orderDatum
+}
+
 module.exports = {
     getSpendingUtxosForAmount,
+    createOutputUtxosForPlaceOrderDatum,
     sumUxtosForUnit
 }
