@@ -2,6 +2,8 @@ const { mnemonicToEntropy } = require('bip39')
 const slib = require('@emurgo/cardano-serialization-lib-nodejs')
 const { Buffer } = require('buffer')
 
+const blockfrost = require('../src/lib/blockfrost')
+
 const harden = num => {
     return 0x80000000 + num;
 }
@@ -31,6 +33,13 @@ const baseAddress = slib.BaseAddress.new(
     slib.NetworkInfo.testnet().network_id(),
     slib.StakeCredential.from_keyhash(utxoPubKey.to_raw_key().hash()),
     slib.StakeCredential.from_keyhash(stakeKey.to_raw_key().hash())
-)
+);
 
-console.log(baseAddress.to_address().to_bech32())
+(async () => {
+    const bech32_address = baseAddress.to_address().to_bech32()
+    const info = await blockfrost.getSpecificAddress(bech32_address)
+    const pp = await blockfrost.fetchProtocolParameters()
+
+
+
+})()
