@@ -28,7 +28,7 @@ const SCRIPT_ADDRESS = config.scriptAddress[network]
 const getUnitFromValueParts = (tokenName, tokenCurrencySymbol) => {
     if(tokenName === "" && tokenCurrencySymbol === "") return "lovelace"
 
-    // todo: hash this correctly to get it ready for blockchain
+    // todo: ensure this is correctly formatted for blockchain
     return tokenCurrencySymbol + tokenName
 }
 
