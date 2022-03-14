@@ -42,6 +42,7 @@ const {
             )
         )
 
+        // TODO: we need to determine if this carries over native tokens
         txBuilder.add_change_if_needed(slib.Address.from_bech32(bech32_address))
         const txBody = txBuilder.build();
         const txHash = slib.hash_transaction(txBody)

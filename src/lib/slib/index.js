@@ -4,6 +4,8 @@
  */
 const slib = require('@emurgo/cardano-serialization-lib-nodejs')
 
+// TODO: we should add testing coverage to this
+
 const harden = num => {
     return 0x80000000 + num;
 }
@@ -69,6 +71,7 @@ const mkTxBuilder = pp => {
     return slib.TransactionBuilder.new(txBuilderConfig)
 }
 
+// TODO: This needs to support multiasset values
 const mkTxInput = (address, utxo) => {
     return [
         slib.Address.from_bech32(address),
