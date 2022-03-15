@@ -5,8 +5,8 @@
 const slib = require('@emurgo/cardano-serialization-lib-nodejs')
 const _ = require('lodash')
 const util = require('util')
-// TODO: we should add testing coverage to this
 
+// TODO: we should add testing coverage to this
 const harden = num => {
     return 0x80000000 + num;
 }
@@ -104,7 +104,7 @@ const mkTxBuilder = pp => {
     return slib.TransactionBuilder.new(txBuilderConfig)
 }
 
-// TODO: This needs to support multiasset values
+// utxo is in the shape from blockfrost api
 const mkTxInput = (address, utxo) => {
     let lovelaceValue = null
     let otherValues = []

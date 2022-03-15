@@ -101,7 +101,6 @@ const options = yargs
         //         'hex'
         //     ).toString('hex')
         // )
-
     } catch (e){
         console.error(e)
     }
