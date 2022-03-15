@@ -5,6 +5,8 @@
 const yargs = require('yargs')
 const fs = require('fs')
 const { mnemonicToEntropy } = require('bip39')
+const blockfrost = require('../../src/lib/blockfrost')
+const slib = require('@emurgo/cardano-serialization-lib-nodejs')
 
 const {
     createRootKeyFromEntropy,
@@ -12,18 +14,15 @@ const {
     createPrivateKeyFromAccountKey,
     getPublicKeyForPrivateKey,
     getHashForPubKey,
-    getSimpleScriptPolicyForPublicKey
-} = require('../../src/lib/slib')
+    getSimpleScriptHash,
+    getSimpleBaseAddressForAccountKey
+} = require('../../src/lib/slib');
 
 const options = yargs
     .option("r", {
         alias: "recovery-file",
         describe: "the file with the recovery string",
         required: true
-    })
-    .option("o", {
-        alias: "output-script-file",
-        describe: "the file output location for the policy script",
     })
     .argv;
 
@@ -36,20 +35,22 @@ const options = yargs
         const accountKey = createAccountKeyFromRootKey(rootKey)
         const privateKey = createPrivateKeyFromAccountKey(accountKey)
         const publicKey = getPublicKeyForPrivateKey(privateKey)
+        const baseAddress = getSimpleBaseAddressForAccountKey(accountKey)
 
-        const policyId = getSimpleScriptPolicyForPublicKey(publicKey)
-        console.log(policyId.toString('hex'))
+        // const info = await blockfrost.getSpecificAddress(baseAddress.to_address().to_bech32())
+        // const utxosAtAddress = await blockfrost.getUtxosForAddress(baseAddress.to_address().to_bech32())
 
-        if(options['output-file']){
-            const scriptJson = {
-                "keyHash": getHashForPubKey(publicKey),
-                "type": "sig"
-            }
+        const tokenNameUtf = 'juliet_coin'
+        const assetName = slib.AssetName.new(Buffer.from(tokenNameUtf))
+        const mintAssets = slib.MintAssets.new_from_entry(
+            assetName,
+            slib.Int.new_i32(1000000000)
+        )
+        const policyScriptHash = getSimpleScriptHash(publicKey)
+        const mint = slib.Mint.new_from_entry(policyScriptHash, mintAssets)
 
-            const outData = JSON.stringify(scriptJson)
-            fs.writeFileSync(options['output-file'], outData)
-        }
+        console.log(mint)
     } catch (e){
         console.error(e)
     }
-})()
+})();

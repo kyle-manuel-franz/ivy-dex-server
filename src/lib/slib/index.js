@@ -35,6 +35,24 @@ const getHashForPubKey = publicKey => {
     return Buffer.from(publicKey.to_raw_key().hash().to_bytes()).toString('hex')
 }
 
+const getSimpleBaseAddressForAccountKey = accountKey => {
+    const pubKey = accountKey
+        .derive(0)
+        .derive(0)
+        .to_public()
+
+    const stakeKey = accountKey
+        .derive(2)
+        .derive(0)
+        .to_public()
+
+    return slib.BaseAddress.new(
+        slib.NetworkInfo.testnet().network_id(),
+        slib.StakeCredential.from_keyhash(pubKey.to_raw_key().hash()),
+        slib.StakeCredential.from_keyhash(stakeKey.to_raw_key().hash())
+    )
+}
+
 const generateKeySet = entropy => {
     const rootKey = createRootKeyFromEnrtopy(entropy)
     const accountKey = createAccountKeyFromRootKey(rootKey)
@@ -47,11 +65,7 @@ const generateKeySet = entropy => {
         .derive(0)
         .to_public();
 
-    const baseAddress = slib.BaseAddress.new(
-        slib.NetworkInfo.testnet().network_id(),
-        slib.StakeCredential.from_keyhash(utxoPubKey.to_raw_key().hash()),
-        slib.StakeCredential.from_keyhash(stakeKey.to_raw_key().hash())
-    );
+    const baseAddress = getSimpleBaseAddressForAccountKey(accountKey)
 
     return {
         rootKey,
@@ -115,7 +129,16 @@ const getSimpleScriptPolicyForPublicKey = publicKey => {
             nativeScript.hash().to_bytes()
         ).to_bytes(),
         "hex"
-    ).toString('hex')
+    )
+}
+
+const getSimpleScriptHash = publicKey => {
+    const script = slib.ScriptPubkey.new(publicKey.to_raw_key().hash())
+    const nativeScript = slib.NativeScript.new_script_pubkey(script)
+
+    return slib.ScriptHash.from_bytes(
+        nativeScript.hash().to_bytes()
+    )
 }
 
 module.exports = {
@@ -124,8 +147,10 @@ module.exports = {
     createAccountKeyFromRootKey,
     createPrivateKeyFromAccountKey,
     getPublicKeyForPrivateKey,
+    getSimpleBaseAddressForAccountKey,
 
     getSimpleScriptPolicyForPublicKey,
+    getSimpleScriptHash,
 
     getHashForPubKey,
 
