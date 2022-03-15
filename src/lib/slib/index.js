@@ -132,6 +132,11 @@ const getSimpleScriptPolicyForPublicKey = publicKey => {
     )
 }
 
+const getSimpleNativeScriptForPublicKey = publicKey => {
+    const script = slib.ScriptPubkey.new(publicKey.to_raw_key().hash())
+    return slib.NativeScript.new_script_pubkey(script)
+}
+
 const getSimpleScriptHash = publicKey => {
     const script = slib.ScriptPubkey.new(publicKey.to_raw_key().hash())
     const nativeScript = slib.NativeScript.new_script_pubkey(script)
@@ -150,6 +155,7 @@ module.exports = {
     getSimpleBaseAddressForAccountKey,
 
     getSimpleScriptPolicyForPublicKey,
+    getSimpleNativeScriptForPublicKey,
     getSimpleScriptHash,
 
     getHashForPubKey,

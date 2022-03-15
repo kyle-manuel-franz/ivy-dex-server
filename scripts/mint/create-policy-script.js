@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-    This should create a file for a script policy
+    This should print out a policy id given a recovery phrase. It can optionally create a script json file
 */
 const yargs = require('yargs')
 const fs = require('fs')
