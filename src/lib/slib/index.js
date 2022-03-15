@@ -24,6 +24,8 @@ const generateKeySet = entropy => {
 
     const utxoPubKey = utxoPrvKey.to_public();
 
+    console.log(Buffer.from(utxoPubKey.to_raw_key().hash().to_bytes()).toString('hex'))
+
     const stakeKey = accountKey
         .derive(2) // chimeric
         .derive(0)
