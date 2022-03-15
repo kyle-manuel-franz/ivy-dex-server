@@ -38,6 +38,7 @@ const options = yargs
         const publicKey = getPublicKeyForPrivateKey(privateKey)
 
         const policyId = getSimpleScriptPolicyForPublicKey(publicKey)
+
         console.log(policyId.toString('hex'))
 
         if(options['output-file']){
