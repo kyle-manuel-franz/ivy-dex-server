@@ -13,11 +13,11 @@ const {
     createRootKeyFromEntropy,
     createAccountKeyFromRootKey,
     createPrivateKeyFromAccountKey,
-    getPublicKeyForPrivateKey,
     getSimpleBaseAddressForAccountKey,
     mkTxBuilder,
     mkTxInput,
-    printTransactionOutputs
+    printTransactionOutputs,
+    hashAndSignTx
 } = require('../../src/lib/slib');
 
 const options = yargs
@@ -90,28 +90,17 @@ const options = yargs
         txBuilder.add_change_if_needed(baseAddress.to_address())
 
         const txBody = txBuilder.build()
-        const txHash = slib.hash_transaction(txBody)
-        const witness = slib.TransactionWitnessSet.new()
-
-        const vkeywitnesses = slib.Vkeywitnesses.new()
-        const vKeyWitness = slib.make_vkey_witness(txHash, privateKey.to_raw_key())
-        vkeywitnesses.add(vKeyWitness)
-        witness.set_vkeys(vkeywitnesses)
 
         printTransactionOutputs(txBody.outputs())
 
-        const transaction = slib.Transaction.new(
-            txBody,
-            witness,
-            undefined
-        )
+        const transaction = hashAndSignTx(txBody, privateKey)
 
-        const r = await blockfrost.submitTx(
-            Buffer.from(
-                transaction.to_bytes(),
-                'hex'
-            ).toString('hex')
-        )
+        // const r = await blockfrost.submitTx(
+        //     Buffer.from(
+        //         transaction.to_bytes(),
+        //         'hex'
+        //     ).toString('hex')
+        // )
 
     } catch (e){
         console.error(e)

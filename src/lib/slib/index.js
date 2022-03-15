@@ -4,6 +4,7 @@
  */
 const slib = require('@emurgo/cardano-serialization-lib-nodejs')
 const _ = require('lodash')
+const util = require('util')
 // TODO: we should add testing coverage to this
 
 const harden = num => {
@@ -177,10 +178,18 @@ const getSimpleScriptHash = publicKey => {
 }
 
 const printTransactionOutputs = txOutputs => {
+    const printObject = []
     for(let o = 0; o < txOutputs.len(); o++){
+        const outputObject = {}
         const output = txOutputs.get(o)
-        console.log('Address: ' + output.address().to_bech32())
-        console.log('Lovelace: ' + output.amount().coin().to_str())
+        outputObject['address'] = output.address().to_bech32()
+
+        const amounts = []
+        amounts.push({
+            unit: 'lovelace',
+            quantity: output.amount().coin().to_str()
+        })
+
         const multiAssets = output.amount().multiasset()
         if(multiAssets){
             for(let i = 0; i < multiAssets.keys().len(); i++){
@@ -191,13 +200,34 @@ const printTransactionOutputs = txOutputs => {
                     const assetNameUtf = Buffer.from(assetName.name()).toString()
 
                     const amount = assets.get(assetName)
-                    console.log(`Asset Name: ${assetNameUtf}, Amount: ${amount.to_str()}`)
+                    amounts.push({
+                        unit: assetNameUtf,
+                        amount: amount.to_str()
+                    })
                 }
             }
         }
 
-        console.log('\n\n')
+        outputObject['amounts'] = amounts
+        printObject.push(outputObject)
     }
+    console.log(util.inspect(printObject, { depth: null}))
+}
+
+const hashAndSignTx = (txBody, privateKey) => {
+    const txHash = slib.hash_transaction(txBody)
+    const witness = slib.TransactionWitnessSet.new()
+
+    const vkeywitnesses = slib.Vkeywitnesses.new()
+    const vKeyWitness = slib.make_vkey_witness(txHash, privateKey.to_raw_key())
+    vkeywitnesses.add(vKeyWitness)
+    witness.set_vkeys(vkeywitnesses)
+
+    return slib.Transaction.new(
+        txBody,
+        witness,
+        undefined
+    )
 }
 
 module.exports = {
@@ -219,4 +249,6 @@ module.exports = {
     mkTxInput,
 
     printTransactionOutputs,
+
+    hashAndSignTx,
 }

@@ -18,7 +18,9 @@ const {
     getSimpleScriptHash,
     getSimpleBaseAddressForAccountKey,
     mkTxBuilder,
-    mkTxInput
+    mkTxInput,
+    hashAndSignTx,
+    printTransactionOutputs
 } = require('../../src/lib/slib');
 
 const options = yargs
@@ -62,7 +64,9 @@ const options = yargs
         const utxosAtAddress = await blockfrost.getUtxosForAddress(baseAddress.to_address().to_bech32())
         const txInputs = _.map(utxosAtAddress, utxo => mkTxInput(baseAddress.to_address().to_bech32(), utxo))
 
-        txBuilder.add_input(txInputs[0][0], txInputs[0][1], txInputs[0][2])
+        for(let i = 0; i < txInputs.length; i++){
+            txBuilder.add_input(txInputs[i][0], txInputs[i][1], txInputs[i][2])
+        }
 
         const multiAsset = slib.MultiAsset.new()
         const assets = slib.Assets.new()
@@ -80,29 +84,16 @@ const options = yargs
         txBuilder.add_change_if_needed(baseAddress.to_address())
 
         const txBody = txBuilder.build()
-        const txHash = slib.hash_transaction(txBody)
-        const witnesses = slib.TransactionWitnessSet.new()
+        const transaction = hashAndSignTx(txBody, privateKey)
 
-        const vkeywitnesses = slib.Vkeywitnesses.new()
-        const vKeyWitness = slib.make_vkey_witness(txHash, privateKey.to_raw_key())
-        vkeywitnesses.add(vKeyWitness)
-        witnesses.set_vkeys(vkeywitnesses)
-        witnesses.set_native_scripts(ns)
+        // const r = await blockfrost.submitTx(
+        //     Buffer.from(
+        //         transaction.to_bytes(),
+        //         'hex'
+        //     ).toString('hex')
+        // )
 
-        const transaction = slib.Transaction.new(
-            txBody,
-            witnesses,
-            undefined
-        )
-
-        const r = await blockfrost.submitTx(
-            Buffer.from(
-                transaction.to_bytes(),
-                'hex'
-            ).toString('hex')
-        )
-
-        console.log(r)
+        // console.log(r)
     } catch (e){
         console.error(e)
     }
