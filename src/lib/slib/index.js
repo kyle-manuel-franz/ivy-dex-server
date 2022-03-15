@@ -10,21 +10,37 @@ const harden = num => {
     return 0x80000000 + num;
 }
 
-const generateKeySet = entropy => {
-    const rootKey = slib.Bip32PrivateKey.from_bip39_entropy(
+const createRootKeyFromEntropy = entropy => {
+    return slib.Bip32PrivateKey.from_bip39_entropy(
         Buffer.from(entropy, 'hex'),
         Buffer.from('')
     )
+}
 
-    const accountKey = rootKey.derive(harden(1852)).derive(harden(1815)).derive(harden(0))
+const createAccountKeyFromRootKey = rootKey => {
+    return rootKey.derive(harden(1852)).derive(harden(1815)).derive(harden(0))
+}
 
-    const utxoPrvKey = accountKey
-        .derive(0)
-        .derive(0)
+const createPrivateKeyFromAccountKey = (accountKey, i=0, k=0) => {
+    return accountKey
+        .derive(i)
+        .derive(k)
+}
 
-    const utxoPubKey = utxoPrvKey.to_public();
+const getPublicKeyForPrivateKey = privateKey => {
+    return privateKey.to_public()
+}
 
-    console.log(Buffer.from(utxoPubKey.to_raw_key().hash().to_bytes()).toString('hex'))
+const getHashForPubKey = publicKey => {
+    return Buffer.from(publicKey.to_raw_key().hash().to_bytes()).toString('hex')
+}
+
+const generateKeySet = entropy => {
+    const rootKey = createRootKeyFromEnrtopy(entropy)
+    const accountKey = createAccountKeyFromRootKey(rootKey)
+
+    const utxoPrvKey = createPrivateKeyFromAccountKey(accountKey, 0, 0)
+    const utxoPubKey = getPublicKeyForPrivateKey(utxoPrvKey)
 
     const stakeKey = accountKey
         .derive(2) // chimeric
@@ -87,8 +103,32 @@ const mkTxInput = (address, utxo) => {
     ]
 }
 
+/*
+    Gives a policy id for a native asset that must be signed by the key to mint more
+ */
+const getSimpleScriptPolicyForPublicKey = publicKey => {
+    const script = slib.ScriptPubkey.new(publicKey.to_raw_key().hash())
+    const nativeScript = slib.NativeScript.new_script_pubkey(script)
+
+    return Buffer.from(
+        slib.ScriptHash.from_bytes(
+            nativeScript.hash().to_bytes()
+        ).to_bytes(),
+        "hex"
+    ).toString('hex')
+}
+
 module.exports = {
     generateKeySet,
+    createRootKeyFromEntropy,
+    createAccountKeyFromRootKey,
+    createPrivateKeyFromAccountKey,
+    getPublicKeyForPrivateKey,
+
+    getSimpleScriptPolicyForPublicKey,
+
+    getHashForPubKey,
+
     mkTxBuilderConfig,
     mkTxBuilder,
     mkTxInput,
