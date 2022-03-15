@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-    This should create a file for a script policy
+    This should send a native from from a wallet to a new address (bech_32)
 */
 const yargs = require('yargs')
 const fs = require('fs')
@@ -18,13 +18,34 @@ const {
     getSimpleScriptHash,
     getSimpleBaseAddressForAccountKey,
     mkTxBuilder,
-    mkTxInput
+    mkTxInput,
+    printTransactionOutputs
 } = require('../../src/lib/slib');
 
 const options = yargs
     .option("r", {
         alias: "recovery-file",
         describe: "the file with the recovery string",
+        required: true
+    })
+    .option('p', {
+        alias: 'policyid',
+        describe: 'the policy id of the native token',
+        required: true,
+    })
+    .option('t', {
+        alias: 'tokenname',
+        describe: 'the token name of the asset you want to send (utf8)',
+        required: true
+    })
+    .option('n', {
+        alias: 'tokenamount',
+        describe: 'the amount of the native token to send',
+        required: true
+    })
+    .option('a', {
+        alias: 'output-address',
+        describe: 'the output address to receive the native tokens',
         required: true
     })
     .argv;
@@ -40,33 +61,25 @@ const options = yargs
         const publicKey = getPublicKeyForPrivateKey(privateKey)
         const baseAddress = getSimpleBaseAddressForAccountKey(accountKey)
 
-        // const info = await blockfrost.getSpecificAddress(baseAddress.to_address().to_bech32())
-
-        const tokenNameUtf = 'juliet_coin'
-        const assetName = slib.AssetName.new(Buffer.from(tokenNameUtf))
-        const mintAssets = slib.MintAssets.new_from_entry(
-            assetName,
-            slib.Int.new_i32(1000000000)
-        )
-        const policyScriptHash = getSimpleScriptHash(publicKey)
-        console.log(Buffer.from(policyScriptHash.to_bytes(), 'hex').toString('hex'))
-        const simpleNativeScript = getSimpleNativeScriptForPublicKey(publicKey)
-        const mint = slib.Mint.new_from_entry(policyScriptHash, mintAssets)
-
         const pp = await blockfrost.fetchProtocolParameters()
         const txBuilder = mkTxBuilder(pp)
-        const ns = slib.NativeScripts.new()
-        ns.add(simpleNativeScript)
-        txBuilder.set_mint(mint, ns)
 
         const utxosAtAddress = await blockfrost.getUtxosForAddress(baseAddress.to_address().to_bech32())
-        const txInputs = _.map(utxosAtAddress, utxo => mkTxInput(baseAddress.to_address().to_bech32(), utxo))
+        const txInputs = _.map(utxosAtAddress, u => mkTxInput(baseAddress.to_address().to_bech32(), u))
 
-        txBuilder.add_input(txInputs[0][0], txInputs[0][1], txInputs[0][2])
+        for(let i = 0; i < txInputs.length; i++){
+            txBuilder.add_input(txInputs[i][0], txInputs[i][1], txInputs[i][2])
+        }
+
+        const output_address = slib.Address.from_bech32(options['output-address'])
+
+        const nativeAssetName = slib.AssetName.new(Buffer.from(options.tokenname))
 
         const multiAsset = slib.MultiAsset.new()
         const assets = slib.Assets.new()
-        assets.insert(assetName, slib.BigNum.from_str('1000000000'))
+        assets.insert(nativeAssetName, slib.BigNum.from_str(options.tokenamount.toString()))
+
+        const policyScriptHash = slib.ScriptHash.from_bytes(Buffer.from(options.policyid, "hex"))
         multiAsset.insert(policyScriptHash, assets)
 
         const value = slib.Value.new_from_assets(multiAsset)
@@ -74,24 +87,25 @@ const options = yargs
         const lovelaceValue = slib.Value.new(slib.BigNum.from_str('1379280'))
         const finValue = value.checked_add(lovelaceValue)
 
-        const txOutput = slib.TransactionOutput.new(baseAddress.to_address(), finValue)
+        const txOutput = slib.TransactionOutput.new(output_address, finValue)
         txBuilder.add_output(txOutput)
 
         txBuilder.add_change_if_needed(baseAddress.to_address())
 
         const txBody = txBuilder.build()
         const txHash = slib.hash_transaction(txBody)
-        const witnesses = slib.TransactionWitnessSet.new()
+        const witness = slib.TransactionWitnessSet.new()
 
         const vkeywitnesses = slib.Vkeywitnesses.new()
         const vKeyWitness = slib.make_vkey_witness(txHash, privateKey.to_raw_key())
         vkeywitnesses.add(vKeyWitness)
-        witnesses.set_vkeys(vkeywitnesses)
-        witnesses.set_native_scripts(ns)
+        witness.set_vkeys(vkeywitnesses)
+
+        printTransactionOutputs(txBody.outputs())
 
         const transaction = slib.Transaction.new(
             txBody,
-            witnesses,
+            witness,
             undefined
         )
 
@@ -102,7 +116,6 @@ const options = yargs
             ).toString('hex')
         )
 
-        console.log(r)
     } catch (e){
         console.error(e)
     }

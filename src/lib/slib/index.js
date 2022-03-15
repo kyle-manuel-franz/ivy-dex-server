@@ -3,7 +3,7 @@
     serialization lib
  */
 const slib = require('@emurgo/cardano-serialization-lib-nodejs')
-
+const _ = require('lodash')
 // TODO: we should add testing coverage to this
 
 const harden = num => {
@@ -105,6 +105,36 @@ const mkTxBuilder = pp => {
 
 // TODO: This needs to support multiasset values
 const mkTxInput = (address, utxo) => {
+    let lovelaceValue = null
+    let otherValues = []
+    for(let i = 0; i < utxo.amount.length; i++){
+        const amount = utxo.amount[i]
+
+        if(amount.unit === 'lovelace'){
+            lovelaceValue = slib.Value.new(slib.BigNum.from_str(amount.quantity))
+        } else {
+            const multiAsset = slib.MultiAsset.new()
+            const assets = slib.Assets.new()
+
+            const policyId = amount.unit.substring(0, 56)
+            const tokenName = Buffer.from(amount.unit.substring(56), 'hex').toString('utf8')
+
+            const nativeAssetName = slib.AssetName.new(Buffer.from(tokenName))
+            assets.insert(nativeAssetName, slib.BigNum.from_str(amount.quantity))
+
+            const policyScriptHash = slib.ScriptHash.from_bytes(Buffer.from(policyId, "hex"))
+            multiAsset.insert(policyScriptHash, assets)
+
+            const value = slib.Value.new_from_assets(multiAsset)
+            otherValues.push(value)
+        }
+    }
+
+    let finValue = lovelaceValue
+    for(let i = 0; i < otherValues.length; i++){
+        finValue = finValue.checked_add(otherValues[i])
+    }
+
     return [
         slib.Address.from_bech32(address),
         slib.TransactionInput.new(
@@ -113,7 +143,7 @@ const mkTxInput = (address, utxo) => {
             ),
             utxo.output_index
         ),
-        slib.Value.new(slib.BigNum.from_str(utxo.amount[0].quantity))
+        finValue
     ]
 }
 
@@ -146,6 +176,30 @@ const getSimpleScriptHash = publicKey => {
     )
 }
 
+const printTransactionOutputs = txOutputs => {
+    for(let o = 0; o < txOutputs.len(); o++){
+        const output = txOutputs.get(o)
+        console.log('Address: ' + output.address().to_bech32())
+        console.log('Lovelace: ' + output.amount().coin().to_str())
+        const multiAssets = output.amount().multiasset()
+        if(multiAssets){
+            for(let i = 0; i < multiAssets.keys().len(); i++){
+                const scriptHash = multiAssets.keys().get(i)
+                const assets = multiAssets.get(scriptHash)
+                for(let a = 0; a < assets.keys().len(); a++){
+                    const assetName = assets.keys().get(a)
+                    const assetNameUtf = Buffer.from(assetName.name()).toString()
+
+                    const amount = assets.get(assetName)
+                    console.log(`Asset Name: ${assetNameUtf}, Amount: ${amount.to_str()}`)
+                }
+            }
+        }
+
+        console.log('\n\n')
+    }
+}
+
 module.exports = {
     generateKeySet,
     createRootKeyFromEntropy,
@@ -163,4 +217,6 @@ module.exports = {
     mkTxBuilderConfig,
     mkTxBuilder,
     mkTxInput,
+
+    printTransactionOutputs,
 }
