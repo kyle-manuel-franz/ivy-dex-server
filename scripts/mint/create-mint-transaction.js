@@ -29,6 +29,16 @@ const options = yargs
         describe: "the file with the recovery string",
         required: true
     })
+    .option('t', {
+        alias: "tokenname",
+        describe: "the token name to mint (utf8)",
+        required: true
+    })
+    .option('n', {
+        alias: "tokenamount",
+        describe: "the amount of the token to mint",
+        required: true
+    })
     .argv;
 
 (async () => {
@@ -42,16 +52,15 @@ const options = yargs
         const publicKey = getPublicKeyForPrivateKey(privateKey)
         const baseAddress = getSimpleBaseAddressForAccountKey(accountKey)
 
-        // const info = await blockfrost.getSpecificAddress(baseAddress.to_address().to_bech32())
-
-        const tokenNameUtf = 'juliet_coin'
+        const tokenNameUtf = options.tokenname
+        const tokenAmountString = options.tokenamount.toString()
         const assetName = slib.AssetName.new(Buffer.from(tokenNameUtf))
         const mintAssets = slib.MintAssets.new_from_entry(
             assetName,
-            slib.Int.new_i32(1000000000)
+            slib.Int.new_i32(tokenAmountString)
         )
         const policyScriptHash = getSimpleScriptHash(publicKey)
-        console.log(Buffer.from(policyScriptHash.to_bytes(), 'hex').toString('hex'))
+
         const simpleNativeScript = getSimpleNativeScriptForPublicKey(publicKey)
         const mint = slib.Mint.new_from_entry(policyScriptHash, mintAssets)
 
@@ -70,7 +79,7 @@ const options = yargs
 
         const multiAsset = slib.MultiAsset.new()
         const assets = slib.Assets.new()
-        assets.insert(assetName, slib.BigNum.from_str('1000000000'))
+        assets.insert(assetName, slib.BigNum.from_str(tokenAmountString))
         multiAsset.insert(policyScriptHash, assets)
 
         const value = slib.Value.new_from_assets(multiAsset)
