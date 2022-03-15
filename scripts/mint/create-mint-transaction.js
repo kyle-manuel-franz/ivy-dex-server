@@ -39,6 +39,11 @@ const options = yargs
         describe: "the amount of the token to mint",
         required: true
     })
+    .option('d', {
+        alias: 'dry-run',
+        describe: "if true, it will not submit the transaction to blockfrost",
+        default: false
+    })
     .argv;
 
 (async () => {
@@ -93,16 +98,14 @@ const options = yargs
         txBuilder.add_change_if_needed(baseAddress.to_address())
 
         const txBody = txBuilder.build()
-        const transaction = hashAndSignTx(txBody, privateKey)
+        printTransactionOutputs(txBody.outputs())
+        const transaction = hashAndSignTx(txBody, privateKey, ns)
 
-        // const r = await blockfrost.submitTx(
-        //     Buffer.from(
-        //         transaction.to_bytes(),
-        //         'hex'
-        //     ).toString('hex')
-        // )
-
-        // console.log(r)
+        if(options['dry-run']){
+            console.log('dry run')
+        } else {
+            const r = await blockfrost.submitSlibTx(transaction)
+        }
     } catch (e){
         console.error(e)
     }

@@ -214,7 +214,7 @@ const printTransactionOutputs = txOutputs => {
     console.log(util.inspect(printObject, { depth: null}))
 }
 
-const hashAndSignTx = (txBody, privateKey) => {
+const hashAndSignTx = (txBody, privateKey, nativeScripts) => {
     const txHash = slib.hash_transaction(txBody)
     const witness = slib.TransactionWitnessSet.new()
 
@@ -222,7 +222,9 @@ const hashAndSignTx = (txBody, privateKey) => {
     const vKeyWitness = slib.make_vkey_witness(txHash, privateKey.to_raw_key())
     vkeywitnesses.add(vKeyWitness)
     witness.set_vkeys(vkeywitnesses)
-
+    if(nativeScripts){
+        witness.set_native_scripts(nativeScripts)
+    }
     return slib.Transaction.new(
         txBody,
         witness,
