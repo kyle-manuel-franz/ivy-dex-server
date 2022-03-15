@@ -14,8 +14,6 @@ const {
     createAccountKeyFromRootKey,
     createPrivateKeyFromAccountKey,
     getPublicKeyForPrivateKey,
-    getSimpleNativeScriptForPublicKey,
-    getSimpleScriptHash,
     getSimpleBaseAddressForAccountKey,
     mkTxBuilder,
     mkTxInput,
@@ -58,7 +56,6 @@ const options = yargs
         const rootKey = createRootKeyFromEntropy(entropy)
         const accountKey = createAccountKeyFromRootKey(rootKey)
         const privateKey = createPrivateKeyFromAccountKey(accountKey)
-        const publicKey = getPublicKeyForPrivateKey(privateKey)
         const baseAddress = getSimpleBaseAddressForAccountKey(accountKey)
 
         const pp = await blockfrost.fetchProtocolParameters()
