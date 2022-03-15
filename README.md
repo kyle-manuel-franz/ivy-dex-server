@@ -17,3 +17,13 @@ This will start required databases and other monitoring services.
 ## Running Tests
 
 `npm run test`
+
+# Scripts
+
+## Create Mint Policy Id
+
+This script will create a simple policy Id that only requires the verification key from this recovery phrase wallet to mint.
+
+`node scripts/mint/create-policy-script -r <recovery file>`
+
+The recovery file should be a space separated list of words. (use `cardano-wallet recovery-phrase generate`)
