@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-    This should create a file for a script policy
+    This should create and submit a transaction to mint a token with a simple policy
 */
 const yargs = require('yargs')
 const fs = require('fs')
