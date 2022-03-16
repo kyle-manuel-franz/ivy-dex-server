@@ -46,6 +46,11 @@ const options = yargs
         describe: 'the output address to receive the native tokens',
         required: true
     })
+    .option('d', {
+        alias: 'dry-run',
+        describe: "if true, it will not submit the transaction to blockfrost",
+        default: false
+    })
     .argv;
 
 (async () => {
@@ -95,12 +100,12 @@ const options = yargs
 
         const transaction = hashAndSignTx(txBody, privateKey)
 
-        // const r = await blockfrost.submitTx(
-        //     Buffer.from(
-        //         transaction.to_bytes(),
-        //         'hex'
-        //     ).toString('hex')
-        // )
+        if(options['dry-run']){
+            console.log('dry run')
+        } {
+            const r = await blockfrost.submitSlibTx(transaction)
+        }
+
     } catch (e){
         console.error(e)
     }

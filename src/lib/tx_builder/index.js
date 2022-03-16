@@ -101,6 +101,7 @@ const createTxOutputForPlaceOrderDatum = orderDatum => {
     })
 }
 
+// I don't think this is necessary anymore since the serialization lib does it for us
 const createRemainderTxOutForOutputs = (txOuts, spendingUtxos) => {
     const address = spendingUtxos[0].address
 
