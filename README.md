@@ -33,3 +33,9 @@ The recovery file should be a space separated list of words. (use `cardano-walle
 `node scripts/mint/create-mint-transaction -r <recovery file>`
 
 This will create and submit a transaction to blockfrost to mint a coin.
+
+### Convert Mnemonic to Root Key
+
+`node scripts/keys/convert-mnemonic-to-root-key.js -r <recovery file>`
+
+Will return a bech_32 version of a root key for the specified file. 
