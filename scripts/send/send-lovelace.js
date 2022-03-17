@@ -26,6 +26,11 @@ const options = yargs
         describe: "the file with the recovery string",
         required: true
     })
+    .options("k", {
+        alias: "root-key",
+        describe: "Root key (bech_32). Use this instead of the recovery file",
+        required: false,
+    })
     .option('n', {
         alias: 'lovelace',
         describe: 'the amount of lovelace to send 1 ada = 1000000 lovelace',
@@ -45,10 +50,16 @@ const options = yargs
 
 (async () => {
     try {
-        const data = fs.readFileSync(options['recovery-file'])
-        const entropyString = data.toString().trim()
-        const entropy = mnemonicToEntropy(entropyString)
-        const rootKey = createRootKeyFromEntropy(entropy)
+        let rootKey
+        if(options['recovery-file']){
+            const data = fs.readFileSync(options['recovery-file'])
+            const entropyString = data.toString().trim()
+            const entropy = mnemonicToEntropy(entropyString)
+            rootKey = createRootKeyFromEntropy(entropy)
+        } else {
+            rootKey = slib.Bip32PrivateKey.from_bech32(options['root-key'])
+        }
+
         const accountKey = createAccountKeyFromRootKey(rootKey)
         const privateKey = createPrivateKeyFromAccountKey(accountKey)
         const baseAddress = getSimpleBaseAddressForAccountKey(accountKey)
