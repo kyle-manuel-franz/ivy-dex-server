@@ -100,7 +100,7 @@ const options = yargs
 
         const value = slib.Value.new_from_assets(multiAsset)
 
-        const lovelaceValue = slib.Value.new(slib.BigNum.from_str('1379280'))
+        const lovelaceValue = slib.Value.new(slib.BigNum.from_str('1379280')) // Min ADA per UTXO
         const finValue = value.checked_add(lovelaceValue)
 
         const txOutput = slib.TransactionOutput.new(baseAddress.to_address(), finValue)

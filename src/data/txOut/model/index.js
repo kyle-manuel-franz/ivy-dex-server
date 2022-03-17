@@ -13,4 +13,4 @@ const txOutSchema = new mongoose.Schema({
 
 const txOutModel = mongoose.model("txOut", txOutSchema)
 
-module.exports = txOutModel
+module.exports = txOutModela
