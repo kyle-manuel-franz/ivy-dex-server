@@ -16,7 +16,6 @@ initializeMongoDbConnection().then()
 
 app.get('/api/tokens', async (req, res, next) => {
     const tokens = await tokenModel.find()
-    console.log('api/tokens')
     res.send(JSON.stringify(tokens))
 })
 
