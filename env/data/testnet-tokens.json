@@ -1,0 +1,18 @@
+[
+  {
+    "policyId": "8387e8076f4ed0123e84371ea2643b2351f9570410a50a5351190f6c",
+    "tokenName": "6a756c6965745f636f696e",
+    "tokenNameUtf": "juliet_coin",
+    "asset": "8387e8076f4ed0123e84371ea2643b2351f9570410a50a5351190f6c6a756c6965745f636f696e",
+    "fingerprint": "asset1j0aqgpjez9gf8f0wgxl656p47ssy7at9ay7v5r",
+    "quantity": 1000000000
+  },
+  {
+    "policyId": "739405372e2e16f87d9363b85d098970de8fd2b3761a452dc2f1881f",
+    "tokenName": "6f7468656c6c6f5f636f696e",
+    "tokenNameUtf": "othello_coin",
+    "asset": "739405372e2e16f87d9363b85d098970de8fd2b3761a452dc2f1881f6f7468656c6c6f5f636f696e",
+    "fingerprint": "asset1mmn0m8vgqzxxca0e6f4y67nga7uwwmxd0nk34d",
+    "quantity": 1000000000
+  }
+]
