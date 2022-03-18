@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const tokenSchema = new mongoose.Schema({
-    policyId: String,
+    policyId: { type:String, unique: true },
     tokenName: String,
     tokenNameUtf: String,
     fingerprint: String,
