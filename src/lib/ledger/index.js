@@ -16,8 +16,7 @@ const hashDatum = orderDatum => {
         orderDatum.odSellerCurrencySymbol,
         orderDatum.odSellerTokenAmount
     )
-    const res = slib.hash_plutus_data(datum)
-    return toHex(res.to_bytes())
+    return slib.hash_plutus_data(datum)
 }
 
 const mkSerializedOrderDatum = (

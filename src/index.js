@@ -22,21 +22,36 @@ app.get('/api/tokens', async (req, res, next) => {
 
 app.get('/api/tx/place_order', async (req, res, next) => {
     // build transaction for place order
-
+    // this should just build the bytes buffer for the datum and other peices
+    const ret_shape = {
+        order_datum: "",
+        outputs: "",
+        redeemers: ""
+    }
     res.status(200)
     res.send('success')
 })
 
 app.get('/api/tx/take_order', async (req, res, next) => {
     // build transaction for take order
-
+    // this should just build the bytes buffer for the datum and other peices
+    const ret_shape = {
+        order_datum: "",
+        outputs: "",
+        redeemers: ""
+    }
     res.status(200)
     res.send('success')
 })
 
 app.get('/api/tx/cancel_order', async (req, res, next) => {
     // build transaction for cancel order
-
+    // this should just build the bytes buffer for the datum and other peices
+    const ret_shape = {
+        order_datum: "",
+        outputs: "",
+        redeemers: ""
+    }
     res.status(200)
     res.send('success')
 })

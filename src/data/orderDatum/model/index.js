@@ -10,7 +10,9 @@ const orderDatumSchema = new mongoose.Schema({
 
     odSellerTokenName: String,
     odSellerCurrencySymbol: String,
-    odSellerTokenAmount: Number
+    odSellerTokenAmount: Number,
+
+    odOwnerAddress: String,
 })
 
 const orderDatumModel = mongoose.model("orderDatum", orderDatumSchema)
