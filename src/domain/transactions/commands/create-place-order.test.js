@@ -1,9 +1,9 @@
 const slib = require('@emurgo/cardano-serialization-lib-nodejs')
 const { Buffer } = require('buffer')
-const toHex = (bytes) => Buffer.from(bytes).toString("hex");
+const _ = require('lodash')
 
 const {
-    createPartialPlaceOrderTransaction
+    createOutputsForPlaceOrder
 } = require('./index')
 
 const {
@@ -51,17 +51,29 @@ test('creates a partial tx for place order with native asset', async () => {
     const bookAddress = slib.Address.from_bech32(SCRIPT_ADDRESS)
     const odBookPubKeyHash = Buffer.from(slib.BaseAddress.from_address(bookAddress).payment_cred().to_keyhash().to_bytes()).toString('hex')
 
+    const buyerAmount = '10000'
+
     const orderDatum = {
         odOwner: odOwnerPubKeyHash,
         odBook: odBookPubKeyHash,
 
         odBuyerTokenName: OTHELLO_TOKEN.tokenName,
         odBuyerCurrencySymbol: OTHELLO_TOKEN.policyId,
-        odBuyerTokenAmount: '10000',
+        odBuyerTokenAmount: buyerAmount,
 
         odSellerTokenName: '',
         odSellerCurrencySymbol: '',
         odSellerTokenAmount: '1000000'
     }
-    const txBuilder = await createPartialPlaceOrderTransaction(orderDatum, SCRIPT_ADDRESS)
+    const outputs = await createOutputsForPlaceOrder(orderDatum, SCRIPT_ADDRESS)
+    const o = slib.TransactionOutput.from_bytes(outputs[0])
+
+    const value = o.amount()
+    const amounts = convertValueToJson(value)
+
+    const nativeAsset = _.find(amounts, a => a.unit === `${OTHELLO_TOKEN.policyId}${OTHELLO_TOKEN.tokenName}` )
+
+    expect(amounts).toHaveLength(2)
+    expect(nativeAsset.unit).toEqual(`${OTHELLO_TOKEN.policyId}${OTHELLO_TOKEN.tokenName}`)
+    expect(nativeAsset.amount).toEqual(buyerAmount)
 })

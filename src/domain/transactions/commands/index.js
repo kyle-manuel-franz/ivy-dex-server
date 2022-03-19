@@ -24,10 +24,8 @@ const makeValueForNativeToken = (
     return slib.Value.new_from_assets(multiAsset)
 }
 
-const createPartialPlaceOrderTransaction = async (orderDatum, script_address) => {
+const createOutputsForPlaceOrder = async (orderDatum, script_address) => {
     const pp = await blockfrost.fetchProtocolParameters()
-    const txBuilder = mkTxBuilder(pp)
-
     const datum_hash = hashDatum(orderDatum)
 
     let buyerValue
@@ -53,13 +51,9 @@ const createPartialPlaceOrderTransaction = async (orderDatum, script_address) =>
 
     scriptOutput.set_data_hash(datum_hash)
 
-    txBuilder.add_output(
-        scriptOutput
-    )
-
-    return txBuilder
+    return [scriptOutput.to_bytes()]
 }
 
 module.exports = {
-    createPartialPlaceOrderTransaction
+    createOutputsForPlaceOrder
 }
