@@ -8,6 +8,7 @@ const {
 
 const {
     OTHELLO_ADDRESS,
+    JULIET_ADDRESS,
     SCRIPT_ADDRESS
 } = require('../../../../env/data/addresses')
 
@@ -48,7 +49,7 @@ test('creates a partial tx for place order with native asset', async () => {
     const ownerAddress = slib.Address.from_bech32(OTHELLO_ADDRESS)
     const odOwnerPubKeyHash = Buffer.from(slib.BaseAddress.from_address(ownerAddress).payment_cred().to_keyhash().to_bytes()).toString('hex')
 
-    const bookAddress = slib.Address.from_bech32(SCRIPT_ADDRESS)
+    const bookAddress = slib.Address.from_bech32(JULIET_ADDRESS)
     const odBookPubKeyHash = Buffer.from(slib.BaseAddress.from_address(bookAddress).payment_cred().to_keyhash().to_bytes()).toString('hex')
 
     const buyerAmount = '10000'
