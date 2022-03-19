@@ -19,6 +19,27 @@ app.get('/api/tokens', async (req, res, next) => {
     res.send(JSON.stringify(tokens))
 })
 
+app.get('/api/tx/place_order', async (req, res, next) => {
+    // build transaction for place order
+
+    res.status(200)
+    res.send('success')
+})
+
+app.get('/api/tx/take_order', async (req, res, next) => {
+    // build transaction for take order
+
+    res.status(200)
+    res.send('success')
+})
+
+app.get('/api/tx/cancel_order', async (req, res, next) => {
+    // build transaction for cancel order
+
+    res.status(200)
+    res.send('success')
+})
+
 app.get('/api', async (req, res, next) => {
     res.send("hello world")
 })

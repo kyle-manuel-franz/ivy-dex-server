@@ -9,6 +9,9 @@ const path = require('path');
     const data = fs.readFileSync(path.join(__dirname, '../../env/data/testnet-tokens.json')).toString()
     const tokenJSON = JSON.parse(data)
 
+    await tokenModel.deleteMany();
+
+
     for(let i = 0; i < tokenJSON.length; i++){
         const t = tokenJSON[i]
         const token = new tokenModel({
@@ -17,7 +20,8 @@ const path = require('path');
             tokenNameUtf: t.tokenNameUtf,
             asset: t.asset,
             fingerprint: t.fingerprint,
-            quantity: t.quantity
+            quantity: t.quantity,
+            metadata: t.metadata
         })
 
         try {
