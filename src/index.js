@@ -10,6 +10,7 @@ const tokenModel = require('./data/tokens/model')
 const _ = require('lodash')
 
 const {
+    JULIET_ADDRESS,
     SCRIPT_ADDRESS
 } = require('../env/data/addresses')
 
@@ -41,7 +42,7 @@ app.get('/api/tx_outputs/place_order', async (req, res, next) => {
         buyerTokenName = ''
     } else {
         buyerCurrencySymbol = buyerAsset.substring(0, 56)
-        buyerTokenName = buyerAsset.substring(56, buyerAsset.length)
+        buyerTokenName = Buffer.from(buyerAsset.substring(56, buyerAsset.length), "hex").toString()
     }
 
     let sellerCurrencySymbol, sellerTokenName
@@ -49,17 +50,17 @@ app.get('/api/tx_outputs/place_order', async (req, res, next) => {
         sellerCurrencySymbol = ''
         sellerTokenName = ''
     } else {
-        sellerCurrencySymbol = buyerAsset.substring(0, 56)
-        sellerTokenName = buyerAsset.substring(56, buyerAsset.length)
+        sellerCurrencySymbol = sellerAsset.substring(0, 56)
+        sellerTokenName = Buffer.from(sellerAsset.substring(56, buyerAsset.length), "hex").toString()
     }
 
     const ownerAddress = slib.Address.from_bytes(Buffer.from(ownerAddressRaw, 'hex'))
     const ownerPubKeyHash = Buffer.from(slib.BaseAddress.from_address(ownerAddress).payment_cred().to_keyhash().to_bytes()).toString('hex')
 
-    const bookAddress = slib.Address.from_bech32(SCRIPT_ADDRESS)
+    const bookAddress = slib.Address.from_bech32(JULIET_ADDRESS)
     const odBookPubKeyHash = Buffer.from(slib.BaseAddress.from_address(bookAddress).payment_cred().to_keyhash().to_bytes()).toString('hex')
 
-    const outputs = await createOutputsForPlaceOrder({
+    const orderDatum = {
         odOwner: ownerPubKeyHash,
         odBook: odBookPubKeyHash,
 
@@ -70,10 +71,15 @@ app.get('/api/tx_outputs/place_order', async (req, res, next) => {
         odSellerTokenName: sellerTokenName,
         odSellerCurrencySymbol: sellerCurrencySymbol,
         odSellerTokenAmount: sellerAmount
-    }, SCRIPT_ADDRESS)
+    }
+
+    const outputs = await createOutputsForPlaceOrder(orderDatum, SCRIPT_ADDRESS)
 
     res.status(200)
-    res.send(_.map(outputs, o => Buffer.from(o).toString('hex')))
+    res.send({
+        outputs: _.map(outputs, o => Buffer.from(o).toString('hex')),
+        order_datum: orderDatum
+    })
 })
 
 app.get('/api/tx/take_order', async (req, res, next) => {

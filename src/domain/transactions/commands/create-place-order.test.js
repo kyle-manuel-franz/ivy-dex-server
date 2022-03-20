@@ -16,6 +16,10 @@ const {
     OTHELLO_TOKEN
 } = require('../../../../env/data/tokens')
 
+const {
+    printTransactionOutputs
+} = require('../../../lib/slib')
+
 const convertValueToJson = value => {
     const amounts = []
     amounts.push({
@@ -68,6 +72,10 @@ test('creates a partial tx for place order with native asset', async () => {
     }
     const outputs = await createOutputsForPlaceOrder(orderDatum, SCRIPT_ADDRESS)
     const o = slib.TransactionOutput.from_bytes(outputs[0])
+
+    const outputsArr = slib.TransactionOutputs.new()
+    outputsArr.add(o)
+    printTransactionOutputs(outputsArr)
 
     const value = o.amount()
     const amounts = convertValueToJson(value)
