@@ -13,6 +13,8 @@ const orderDatumSchema = new mongoose.Schema({
     odSellerTokenAmount: Number,
 
     odOwnerAddress: String,
+
+    datum_hash: String,
 })
 
 const orderDatumModel = mongoose.model("orderDatum", orderDatumSchema)

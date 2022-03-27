@@ -7,7 +7,11 @@ const cors = require('cors');
 const { Buffer } = require('buffer')
 const morgan = require('morgan')
 const tokenModel = require('./data/tokens/model')
+const orderDatumModel = require('./data/orderDatum/model')
 const _ = require('lodash')
+
+const transactionRouter = require('./domain/transactions/web')
+const { mkSerializedOrderDatum, hashDatum } = require('./lib/ledger')
 
 const {
     JULIET_ADDRESS,
@@ -73,12 +77,27 @@ app.get('/api/tx_outputs/place_order', async (req, res, next) => {
         odSellerTokenAmount: sellerAmount
     }
 
+
     const outputs = await createOutputsForPlaceOrder(orderDatum, SCRIPT_ADDRESS)
+
+    const orderDatumRecord = new orderDatumModel(orderDatum)
+    orderDatumRecord.datum_hash = Buffer.from(hashDatum(orderDatum).to_bytes()).toString('hex')
+    await orderDatumRecord.save()
 
     res.status(200)
     res.send({
         outputs: _.map(outputs, o => Buffer.from(o).toString('hex')),
-        order_datum: orderDatum
+        order_datum: orderDatum,
+        order_datum_serialized: Buffer.from(mkSerializedOrderDatum(
+            orderDatum.odOwner,
+            orderDatum.odBook,
+            orderDatum.odBuyerTokenName,
+            orderDatum.odBuyerCurrencySymbol,
+            orderDatum.odBuyerTokenAmount.toString(),
+            orderDatum.odSellerTokenName,
+            orderDatum.odSellerCurrencySymbol,
+            orderDatum.odSellerTokenAmount.toString()
+        ).to_bytes()).toString('hex')
     })
 })
 

@@ -18,7 +18,9 @@ const options = yargs
         const info = await blockfrost.getSpecificAddress(options.address)
         console.log(info)
         const utxos = await blockfrost.getUtxosForAddress(options.address)
-        console.log(utxos)
+        for(let i = 0; i < utxos.length; i++){
+            console.log(utxos[i])
+        }
     } catch (e){
         console.error(e)
     }

@@ -47,14 +47,12 @@ const mkSerializedOrderDatum = (
     fieldList.add(slib.PlutusData.new_bytes(fromHex(odSellerCurrencySymbol)))
     fieldList.add(slib.PlutusData.new_integer(slib.BigInt.from_str(odSellerTokenAmount)))
 
-    const datumConstructor = slib.PlutusData.new_constr_plutus_data(
+    return slib.PlutusData.new_constr_plutus_data(
         slib.ConstrPlutusData.new(
             slib.BigNum.from_str("0"),
             fieldList
         )
     )
-
-    return datumConstructor
 }
 
 module.exports = {
