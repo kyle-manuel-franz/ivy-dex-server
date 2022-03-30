@@ -4,6 +4,7 @@ const fetchProtocolParameters = require('./fetch-protocol-parameters')
 const submitTx = require('./submit-tx')
 const submitSlibTx = require('./submit-slib-transaction')
 const getDatumFromDatumHash = require('./get-datum-from-hash')
+const getMetadataForTransaction = require('./get-metadata-for-transaction')
 
 module.exports = {
     getSpecificAddress,
@@ -11,5 +12,6 @@ module.exports = {
     getUtxosForAddress,
     getDatumFromDatumHash,
     submitTx,
-    submitSlibTx
+    submitSlibTx,
+    getMetadataForTransaction
 }

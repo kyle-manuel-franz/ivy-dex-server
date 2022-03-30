@@ -9,6 +9,9 @@ const orderModel = require('./data/order/model')
 
 const { initializeMongoDbConnection } = require('./lib/mongoose')
 
+const Queue = require('bull')
+const syncQueue = new Queue('sync_queue', 'redis://127.0.0.1:6379')
+
 const app = express()
 app.use(cors())
 app.use(morgan('common'))
@@ -17,6 +20,7 @@ initializeMongoDbConnection().then()
 
 app.get('/api/tokens', async (req, res, next) => {
     const tokens = await tokenModel.find()
+    // syncQueue.add({ data: 'hi' })
     res.send(JSON.stringify(tokens))
 })
 
@@ -42,7 +46,34 @@ app.post('/api/datum', async (req, res, next) => {
 // I'll have another job for that
 app.post('/api/datum/:id/spend', async (req, rex, next) => {
     const { id } = req.params
+})
 
+app.get('/api/orders/:currencySymbol/:tokenName', async (req, res, next) => {
+    const { currencySymbol, tokenName } = req.params
+    const orders = await orderModel.find({
+        $or: [
+            {
+                'buyerValue.name': tokenName,
+                'buyerValue.currencySymbol': currencySymbol,
+                status: 'OPEN'
+            },
+            {
+                'sellerValue.name': tokenName,
+                'sellerValue.currencySymbol': currencySymbol,
+                status: 'OPEN'
+            }
+        ]
+    })
+    res.send(orders)
+})
+
+app.get('/api/orders/:paymentPubKeyHash', async (req, res, next) => {
+    const { paymentPubKeyHash } = req.params
+    const orders = await orderModel.find({
+        ownerPubKeyHash: { $regex: new RegExp(`^${paymentPubKeyHash}`)}
+    })
+
+    res.send(orders)
 })
 
 app.get('/api', async (req, res, next) => {
