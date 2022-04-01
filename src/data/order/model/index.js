@@ -55,6 +55,12 @@ orderSchema.index({
     unique: false
 })
 
+orderSchema.index({
+    status: 1,
+}, {
+    unique: false
+})
+
 const orderModel = mongoose.model("order", orderSchema)
 
 module.exports = orderModel

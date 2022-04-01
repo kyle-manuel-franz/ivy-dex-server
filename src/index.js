@@ -76,6 +76,33 @@ app.get('/api/orders/:paymentPubKeyHash', async (req, res, next) => {
     res.send(orders)
 })
 
+// TODO: get "last" traded prices
+app.get('/api/tokens/prices', async (req, res, next) => {
+    const sellingOrders = await orderModel.aggregate(
+        [
+            {
+                $match: { status: 'OPEN', 'buyerValue.name': { $ne: ''} }
+            },
+            {
+                $group: { _id: "$buyerValue.name", bestOffer: { $min: {  $divide: ["$sellerValue.amount", "$buyerValue.amount"] }} }
+            }
+        ]
+    )
+
+    const buyingOrders = await orderModel.aggregate(
+        [
+            {
+                $match: { status: 'OPEN', 'sellerValue.name': { $ne: ''} }
+            },
+            {
+                $group: { _id: "$sellerValue.name", bestOffer: { $max: {  $divide: ["$buyerValue.amount", "$sellerValue.amount"] }} }
+            }
+        ]
+    )
+
+    res.send({ sellingOrders, buyingOrders })
+})
+
 app.get('/api', async (req, res, next) => {
     res.send("hello world")
 })
