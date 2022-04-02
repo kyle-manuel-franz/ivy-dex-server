@@ -16,6 +16,7 @@ const trim = (str, n=2) => {
 }
 
 syncQueue.process(async (job, done) => {
+    console.log("Syncing Ledger with Database")
     const utxos = await getUtxosForAddress('addr_test1wqj8js8x3jw7cjqlgrsetcp7v80jxsqyyjk3hcer9l9f8rsvk7456')
 
     // looks for UTXOs that exist on the ledger, but don't exist on our database
@@ -51,26 +52,36 @@ syncQueue.process(async (job, done) => {
             amount: sellerAmount
         }
 
-        const order = new orderModel({
-            ownerPubKeyHash: Buffer.from(trim(address, 4), 'hex').toString('hex'),
-            buyerValue,
-            sellerValue,
+        const existing_order = await orderModel.findOne({ txHash: tx_hash })
+        if(!existing_order){
+            const order = new orderModel({
+                ownerPubKeyHash: Buffer.from(trim(address, 4), 'hex').toString('hex'),
+                buyerValue,
+                sellerValue,
 
-            txHash: tx_hash,
+                txHash: tx_hash,
 
-            status: 'OPEN',
-            scriptAddress: 'addr_test1wqj8js8x3jw7cjqlgrsetcp7v80jxsqyyjk3hcer9l9f8rsvk7456',
-            utxo: utxos[i]
-        })
+                status: 'OPEN',
+                scriptAddress: 'addr_test1wqj8js8x3jw7cjqlgrsetcp7v80jxsqyyjk3hcer9l9f8rsvk7456',
+                utxo: utxos[i]
+            })
 
-        try {
-            await order.save()
-        } catch (e){
-            console.error(e)
+            try {
+                await order.save()
+            } catch (e){
+                console.error(e)
+            }
+        } else {
+            existing_order.utxo = utxos[i]
+            existing_order.scriptAddress = 'addr_test1wqj8js8x3jw7cjqlgrsetcp7v80jxsqyyjk3hcer9l9f8rsvk7456'
+
+            try {
+                await existing_order.save()
+            } catch (e) {
+                console.error(e)
+            }
         }
     }
-
-    // Look for utxos that have open status, that don't exist on the ledger (move to closed state)
 
     done()
 })

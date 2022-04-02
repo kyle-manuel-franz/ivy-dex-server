@@ -26,18 +26,18 @@ app.get('/api/tokens', async (req, res, next) => {
 
 // TODO: move this to a separate router and handler with validation and what not
 app.post('/api/datum', async (req, res, next) => {
-    const { data: { buyerValue, sellerValue, ownerPubKeyHash, ownerAddress }} = req.body
+    const { data: { buyerValue, sellerValue, ownerPubKeyHash, ownerAddress, txHash }} = req.body
 
     const order = new orderModel({
         buyerValue,
         sellerValue,
         ownerAddress,
         ownerPubKeyHash,
+        txHash,
         status: "OPEN"
     })
 
     await order.save()
-
     res.send('OK')
 })
 
