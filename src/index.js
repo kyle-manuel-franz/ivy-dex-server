@@ -20,8 +20,15 @@ initializeMongoDbConnection().then()
 
 app.get('/api/tokens', async (req, res, next) => {
     const tokens = await tokenModel.find()
-    // syncQueue.add({ data: 'hi' })
+
     res.send(JSON.stringify(tokens))
+})
+
+app.get('/api/sync/:tx_hash', async (req, res, next) => {
+    const { tx_hash } = req.params
+    syncQueue.add({ tx_hash })
+    res.status(200)
+    res.send()
 })
 
 // TODO: move this to a separate router and handler with validation and what not
@@ -64,6 +71,7 @@ app.get('/api/orders/:currencySymbol/:tokenName', async (req, res, next) => {
             }
         ]
     })
+    syncQueue.add({ name: 'sync_pending' })
     res.send(orders)
 })
 
@@ -76,6 +84,20 @@ app.get('/api/orders/:paymentPubKeyHash', async (req, res, next) => {
     res.send(orders)
 })
 
+app.post('/api/orders/:tx_hash', async (req, res, next) => {
+    const { tx_hash } = req.params
+    const { taker_address } = req.body
+    const order = await orderModel.findOne({ txHash: tx_hash })
+
+    order.takerAddress = taker_address
+    order.status = 'CLOSED'
+    order.closedAt = new Date()
+    await order.save()
+
+    res.status(200)
+    res.send()
+})
+
 // TODO: get "last" traded prices
 app.get('/api/tokens/prices', async (req, res, next) => {
     const sellingOrders = await orderModel.aggregate(
@@ -84,7 +106,7 @@ app.get('/api/tokens/prices', async (req, res, next) => {
                 $match: { status: 'OPEN', 'buyerValue.name': { $ne: ''} }
             },
             {
-                $group: { _id: "$buyerValue.name", bestOffer: { $min: {  $divide: ["$sellerValue.amount", "$buyerValue.amount"] }} }
+                $group: { _id: "$buyerValue.name", count: { $count: {}}, bestOffer: { $min: {  $divide: ["$sellerValue.amount", "$buyerValue.amount"] }} }
             }
         ]
     )
@@ -95,12 +117,40 @@ app.get('/api/tokens/prices', async (req, res, next) => {
                 $match: { status: 'OPEN', 'sellerValue.name': { $ne: ''} }
             },
             {
-                $group: { _id: "$sellerValue.name", bestOffer: { $max: {  $divide: ["$buyerValue.amount", "$sellerValue.amount"] }} }
+                $group: { _id: "$sellerValue.name", count: { $count: {}}, bestOffer: { $max: {  $divide: ["$buyerValue.amount", "$sellerValue.amount"] }} }
             }
         ]
     )
 
-    res.send({ sellingOrders, buyingOrders })
+    const lastBuyOrders = await orderModel.aggregate(
+        [
+            {
+                $match: { status: 'CLOSED', 'sellerValue.name': { $ne: ''} }
+            },
+            {
+                $sort: { "closedAt": -1}
+            },
+            {
+                $group: { _id: "$sellerValue.name", closedAt: { $first: '$closedAt'}, amount: { $first: {  $divide: ["$buyerValue.amount", "$sellerValue.amount"] } }}
+            }
+        ]
+    )
+
+    const lastSellOrders = await orderModel.aggregate(
+        [
+            {
+                $match: { status: 'CLOSED', 'buyerValue.name': { $ne: ''} }
+            },
+            {
+                $sort: { "closedAt": -1}
+            },
+            {
+                $group: { _id: "$buyerValue.name", closedAt: { $first: '$closedAt'}, amount: { $first: {  $divide: ["$sellerValue.amount", "$buyerValue.amount"] } }}
+            }
+        ]
+    )
+
+    res.send({ sellingOrders, buyingOrders, lastBuyOrders, lastSellOrders })
 })
 
 app.get('/api', async (req, res, next) => {

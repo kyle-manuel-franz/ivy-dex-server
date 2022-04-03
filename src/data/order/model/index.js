@@ -25,8 +25,14 @@ const orderSchema = new mongoose.Schema({
 
     status: String,
     scriptAddress: String,
+
     utxo: blockfrostUtxoSchema,
-})
+    takerAddress: String,
+
+    closedAt: Date,
+
+    syncProgress: String
+}, { timestamps: true })
 
 orderSchema.index({
     txHash: 1,

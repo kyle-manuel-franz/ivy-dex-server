@@ -5,6 +5,7 @@ const submitTx = require('./submit-tx')
 const submitSlibTx = require('./submit-slib-transaction')
 const getDatumFromDatumHash = require('./get-datum-from-hash')
 const getMetadataForTransaction = require('./get-metadata-for-transaction')
+const getUtxosForTx = require('./get-utxos-for-tx')
 
 module.exports = {
     getSpecificAddress,
@@ -13,5 +14,6 @@ module.exports = {
     getDatumFromDatumHash,
     submitTx,
     submitSlibTx,
-    getMetadataForTransaction
+    getMetadataForTransaction,
+    getUtxosForTx
 }
