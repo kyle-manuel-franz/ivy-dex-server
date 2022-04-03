@@ -85,6 +85,18 @@ app.get('/api/orders/:paymentPubKeyHash', async (req, res, next) => {
     res.send(orders)
 })
 
+app.post('/api/orders/:tx_hash/cancel', async (req, res, next) => {
+    const { tx_hash } = req.params
+    const order = await orderModel.findOne({ txHash: tx_hash })
+
+    order.status = 'CANCELED'
+    order.closedAt = new Date()
+    await order.save()
+
+    res.status(200)
+    res.send()
+})
+
 app.post('/api/orders/:tx_hash', async (req, res, next) => {
     const { tx_hash } = req.params
     const { taker_address } = req.body
