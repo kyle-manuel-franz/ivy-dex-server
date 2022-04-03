@@ -98,15 +98,24 @@ app.post('/api/orders/:tx_hash', async (req, res, next) => {
     res.send()
 })
 
-// TODO: get "last" traded prices
 app.get('/api/tokens/prices', async (req, res, next) => {
     const sellingOrders = await orderModel.aggregate(
         [
             {
-                $match: { status: 'OPEN', 'buyerValue.name': { $ne: ''} }
+                $match: {
+                    status: 'OPEN',
+                    'buyerValue.name': { $ne: ''}
+                }
             },
             {
-                $group: { _id: "$buyerValue.name", count: { $count: {}}, bestOffer: { $min: {  $divide: ["$sellerValue.amount", "$buyerValue.amount"] }} }
+                $group: {
+                    _id: "$buyerValue.name",
+                    count: { $count: {}},
+                    bestOffer: {
+                        $min: {
+                            $divide: ["$sellerValue.amount", "$buyerValue.amount"] }
+                    }
+                }
             }
         ]
     )
@@ -114,10 +123,22 @@ app.get('/api/tokens/prices', async (req, res, next) => {
     const buyingOrders = await orderModel.aggregate(
         [
             {
-                $match: { status: 'OPEN', 'sellerValue.name': { $ne: ''} }
+                $match: {
+                    status: 'OPEN',
+                    'sellerValue.name': { $ne: ''}
+                }
             },
             {
-                $group: { _id: "$sellerValue.name", count: { $count: {}}, bestOffer: { $max: {  $divide: ["$buyerValue.amount", "$sellerValue.amount"] }} }
+                $group: {
+                    _id: "$sellerValue.name",
+                    count: {
+                        $count: {}},
+                    bestOffer: {
+                        $max: {
+                            $divide: ["$buyerValue.amount", "$sellerValue.amount"]
+                        }
+                    }
+                }
             }
         ]
     )
@@ -125,13 +146,24 @@ app.get('/api/tokens/prices', async (req, res, next) => {
     const lastBuyOrders = await orderModel.aggregate(
         [
             {
-                $match: { status: 'CLOSED', 'sellerValue.name': { $ne: ''} }
+                $match: {
+                    status: 'CLOSED',
+                    'sellerValue.name': { $ne: ''}
+                }
             },
             {
                 $sort: { "closedAt": -1}
             },
             {
-                $group: { _id: "$sellerValue.name", closedAt: { $first: '$closedAt'}, amount: { $first: {  $divide: ["$buyerValue.amount", "$sellerValue.amount"] } }}
+                $group: {
+                    _id: "$sellerValue.name",
+                    closedAt: { $first: '$closedAt'},
+                    amount: {
+                        $first: {
+                            $divide: ["$buyerValue.amount", "$sellerValue.amount"]
+                        }
+                    }
+                }
             }
         ]
     )
@@ -145,12 +177,65 @@ app.get('/api/tokens/prices', async (req, res, next) => {
                 $sort: { "closedAt": -1}
             },
             {
-                $group: { _id: "$buyerValue.name", closedAt: { $first: '$closedAt'}, amount: { $first: {  $divide: ["$sellerValue.amount", "$buyerValue.amount"] } }}
+                $group: {
+                    _id: "$buyerValue.name",
+                    closedAt: {$first: '$closedAt'},
+                    amount: {
+                        $first: {
+                            $divide: ["$sellerValue.amount", "$buyerValue.amount"]
+                        }
+                    }
+                }
             }
         ]
     )
 
-    res.send({ sellingOrders, buyingOrders, lastBuyOrders, lastSellOrders })
+    const buyer24Vol = await orderModel.aggregate([
+        {
+            $match: {
+                status: 'CLOSED',
+                closedAt: {
+                    $lt: new Date(),
+                    $gte: new Date(new Date().setDate(new Date().getDate() - 1))
+                },
+                'buyerValue.name': {$ne: ''}
+            }
+        },
+        {
+            $group: {
+                _id: "$buyerValue.name",
+                volume: { $count: {}}
+            }
+        },
+    ])
+
+    const seller24Vol = await orderModel.aggregate([
+        {
+            $match: {
+                status: 'CLOSED',
+                closedAt: {
+                    $lt: new Date(),
+                    $gte: new Date(new Date().setDate(new Date().getDate() - 1))
+                },
+                'sellerValue.name': {$ne: ''}
+            }
+        },
+        {
+            $group: {
+                _id: "$sellerValue.name",
+                volume: { $count: {}}
+            }
+        },
+    ])
+
+    res.send({
+        sellingOrders,
+        buyingOrders,
+        lastBuyOrders,
+        lastSellOrders,
+        buyer24Vol,
+        seller24Vol
+    })
 })
 
 app.get('/api', async (req, res, next) => {
