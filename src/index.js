@@ -8,6 +8,7 @@ const tokenModel = require('./data/tokens/model')
 const orderModel = require('./data/order/model')
 
 const { initializeMongoDbConnection } = require('./lib/mongoose')
+const _ = require('lodash')
 
 const Queue = require('bull')
 const syncQueue = new Queue('sync_queue', 'redis://127.0.0.1:6379')
@@ -110,8 +111,8 @@ app.get('/api/tokens/prices', async (req, res, next) => {
             {
                 $group: {
                     _id: "$buyerValue.name",
-                    count: { $count: {}},
-                    bestOffer: {
+                    ask_count: { $count: {}},
+                    ask: {
                         $min: {
                             $divide: ["$sellerValue.amount", "$buyerValue.amount"] }
                     }
@@ -131,9 +132,9 @@ app.get('/api/tokens/prices', async (req, res, next) => {
             {
                 $group: {
                     _id: "$sellerValue.name",
-                    count: {
+                    bid_count: {
                         $count: {}},
-                    bestOffer: {
+                    bid: {
                         $max: {
                             $divide: ["$buyerValue.amount", "$sellerValue.amount"]
                         }
@@ -157,8 +158,8 @@ app.get('/api/tokens/prices', async (req, res, next) => {
             {
                 $group: {
                     _id: "$sellerValue.name",
-                    closedAt: { $first: '$closedAt'},
-                    amount: {
+                    lastBuyClosed: { $first: '$closedAt'},
+                    lastBuyAmount: {
                         $first: {
                             $divide: ["$buyerValue.amount", "$sellerValue.amount"]
                         }
@@ -179,8 +180,8 @@ app.get('/api/tokens/prices', async (req, res, next) => {
             {
                 $group: {
                     _id: "$buyerValue.name",
-                    closedAt: {$first: '$closedAt'},
-                    amount: {
+                    lastSellClosed: {$first: '$closedAt'},
+                    lastSellAmount: {
                         $first: {
                             $divide: ["$sellerValue.amount", "$buyerValue.amount"]
                         }
@@ -204,7 +205,7 @@ app.get('/api/tokens/prices', async (req, res, next) => {
         {
             $group: {
                 _id: "$buyerValue.name",
-                volume: { $count: {}}
+                buyCount24: { $count: {}}
             }
         },
     ])
@@ -223,19 +224,33 @@ app.get('/api/tokens/prices', async (req, res, next) => {
         {
             $group: {
                 _id: "$sellerValue.name",
-                volume: { $count: {}}
+                sellCount24: { $count: {}}
             }
         },
     ])
 
-    res.send({
-        sellingOrders,
-        buyingOrders,
-        lastBuyOrders,
-        lastSellOrders,
-        buyer24Vol,
-        seller24Vol
+    const prices = {}
+    _.each([sellingOrders, buyingOrders, lastBuyOrders, lastSellOrders, buyer24Vol, seller24Vol], arr => {
+        _.each(arr, order => {
+            prices[order._id] = {
+                ...prices[order._id],
+                ..._.omit(order, '_id')
+            }
+        })
     })
+
+    _.each(_.entries(prices), ([k, price]) => {
+        const lastBuyAt = _.get(price, 'lastBuyClosed', 0)
+        const lastSellAt = _.get(price, 'lastSellClosed', 0)
+
+        const lastBuyAmount = _.get(price, 'lastBuyAmount', 0)
+        const lastSellAmount = _.get(price, 'lastSellAmount', 0)
+
+        const last = new Date(lastBuyAt) > new Date(lastSellAt) ? lastBuyAmount || 0 : lastSellAmount || 0
+        prices[k].last = last
+    })
+
+    res.send(prices)
 })
 
 app.get('/api', async (req, res, next) => {
