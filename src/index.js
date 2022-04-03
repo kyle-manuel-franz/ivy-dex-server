@@ -44,8 +44,8 @@ app.post('/api/datum', async (req, res, next) => {
         txHash,
         status: "OPEN"
     })
-
     await order.save()
+    syncQueue.add({ name: 'sync_pending' })
     res.send('OK')
 })
 
@@ -72,7 +72,7 @@ app.get('/api/orders/:currencySymbol/:tokenName', async (req, res, next) => {
             }
         ]
     })
-    syncQueue.add({ name: 'sync_pending' })
+
     res.send(orders)
 })
 

@@ -15,17 +15,29 @@ const trim = (str, n=2) => {
     return str.substring(n, str.length)
 }
 
+const MAX_SYNC_ATTEMPTS = 100;
+
 const updatePendingTransactions = async () => {
-    const pending_tx = await orderModel.find({ utxo: null })
-    const hashes = _.map(pending_tx, 'txHash')
+    const pending_txs = await orderModel.find({ utxo: null })
+    const hashes = _.map(pending_txs, 'txHash')
+    let unsynced = 0
 
     for(let j = 0; j < hashes.length; j++){
+        const pending_tx = pending_txs[j]
+        pending_tx.syncAttempts = _.isUndefined(pending_tx.syncAttempts) ? 0 : (pending_tx.syncAttempts + 1)
+        await pending_tx.save()
+
+        if(pending_tx.syncAttempts > MAX_SYNC_ATTEMPTS) {
+            continue
+        }
+
         const tx_hash = hashes[j]
         let utxosForHash
         try {
             utxosForHash = await getUtxosForTx(tx_hash)
         } catch (e){
             console.log('No transaction for tx_hash, please wait longer')
+            unsynced += 1
             continue
         }
         const outputs = utxosForHash.outputs
@@ -94,6 +106,12 @@ const updatePendingTransactions = async () => {
                 }
             }
         }
+    }
+
+    console.log(`Remaining unsynced: ${unsynced}`)
+    // if there are more utxos to sync, run the job again with a 5 second delay
+    if(unsynced !== 0){
+        syncQueue.add({ name: 'sync_pending' }, { delay: 5000 } )
     }
 }
 

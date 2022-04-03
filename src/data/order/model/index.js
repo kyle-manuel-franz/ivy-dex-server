@@ -31,7 +31,8 @@ const orderSchema = new mongoose.Schema({
 
     closedAt: Date,
 
-    syncProgress: String
+    syncProgress: String,
+    syncAttempts: Number
 }, { timestamps: true })
 
 orderSchema.index({
