@@ -116,6 +116,18 @@ app.get('/api/orders/open/:ownerPubKeyHash', async (req, res, next) => {
     const { ownerPubKeyHash } = req.params
 
     const orders = await orderModel.find({
+        status: 'OPEN',
+        ownerPubKeyHash
+    })
+
+    res.send(orders)
+})
+
+app.get('/api/orders/closed/:ownerPubKeyHash', async (req, res, next) => {
+    const { ownerPubKeyHash } = req.params
+
+    const orders = await orderModel.find({
+        status: 'CLOSED',
         ownerPubKeyHash
     })
 
