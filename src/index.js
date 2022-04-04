@@ -32,7 +32,6 @@ app.get('/api/sync/:tx_hash', async (req, res, next) => {
     res.send()
 })
 
-// TODO: move this to a separate router and handler with validation and what not
 app.post('/api/datum', async (req, res, next) => {
     const { data: { buyerValue, sellerValue, ownerPubKeyHash, ownerAddress, txHash }} = req.body
 
@@ -49,28 +48,23 @@ app.post('/api/datum', async (req, res, next) => {
     res.send('OK')
 })
 
-// This end point should update the open UTXOs as spend for the purposes of the UI
-// If the order fails, this will update back from CLOSED to OPEN
-// I'll have another job for that
-app.post('/api/datum/:id/spend', async (req, rex, next) => {
-    const { id } = req.params
+app.get('/api/orders/open/:ownerPubKeyHash', async (req, res, next) => {
+    const { ownerPubKeyHash } = req.params
+
+    const orders = await orderModel.find({
+        status: 'OPEN',
+        ownerPubKeyHash
+    })
+
+    res.send(orders)
 })
 
-app.get('/api/orders/:currencySymbol/:tokenName', async (req, res, next) => {
-    const { currencySymbol, tokenName } = req.params
+app.get('/api/orders/closed/:ownerPubKeyHash', async (req, res, next) => {
+    const { ownerPubKeyHash } = req.params
+
     const orders = await orderModel.find({
-        $or: [
-            {
-                'buyerValue.name': tokenName,
-                'buyerValue.currencySymbol': currencySymbol,
-                status: 'OPEN'
-            },
-            {
-                'sellerValue.name': tokenName,
-                'sellerValue.currencySymbol': currencySymbol,
-                status: 'OPEN'
-            }
-        ]
+        status: 'CLOSED',
+        ownerPubKeyHash
     })
 
     res.send(orders)
@@ -112,23 +106,21 @@ app.post('/api/orders/:tx_hash', async (req, res, next) => {
 })
 
 
-app.get('/api/orders/open/:ownerPubKeyHash', async (req, res, next) => {
-    const { ownerPubKeyHash } = req.params
-
+app.get('/api/orders/:currencySymbol/:tokenName', async (req, res, next) => {
+    const { currencySymbol, tokenName } = req.params
     const orders = await orderModel.find({
-        status: 'OPEN',
-        ownerPubKeyHash
-    })
-
-    res.send(orders)
-})
-
-app.get('/api/orders/closed/:ownerPubKeyHash', async (req, res, next) => {
-    const { ownerPubKeyHash } = req.params
-
-    const orders = await orderModel.find({
-        status: 'CLOSED',
-        ownerPubKeyHash
+        $or: [
+            {
+                'buyerValue.name': tokenName,
+                'buyerValue.currencySymbol': currencySymbol,
+                status: 'OPEN'
+            },
+            {
+                'sellerValue.name': tokenName,
+                'sellerValue.currencySymbol': currencySymbol,
+                status: 'OPEN'
+            }
+        ]
     })
 
     res.send(orders)
