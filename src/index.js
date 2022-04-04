@@ -111,6 +111,17 @@ app.post('/api/orders/:tx_hash', async (req, res, next) => {
     res.send()
 })
 
+
+app.get('/api/orders/open/:ownerPubKeyHash', async (req, res, next) => {
+    const { ownerPubKeyHash } = req.params
+
+    const orders = await orderModel.find({
+        ownerPubKeyHash
+    })
+
+    res.send(orders)
+})
+
 app.get('/api/tokens/prices', async (req, res, next) => {
     const sellingOrders = await orderModel.aggregate(
         [
