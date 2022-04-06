@@ -4,6 +4,8 @@ const port = config.port
 // TODO: turn this off in production
 const cors = require('cors');
 const morgan = require('morgan')
+const path = require('path')
+const rfs = require('rotating-file-stream')
 const tokenModel = require('./data/tokens/model')
 const orderModel = require('./data/order/model')
 
@@ -15,7 +17,13 @@ const syncQueue = new Queue('sync_queue', 'redis://127.0.0.1:6379')
 
 const app = express()
 app.use(cors())
-app.use(morgan('common'))
+
+const accessLogStream = rfs.createStream('access.log', {
+    interval: '1d',
+    path: path.join(__dirname, '../env/monitoring/dev/express/log')
+})
+
+app.use(morgan('common', { stream: accessLogStream }))
 app.use(express.json())
 initializeMongoDbConnection().then()
 
@@ -53,7 +61,8 @@ app.get('/api/orders/open/:ownerPubKeyHash', async (req, res, next) => {
 
     const orders = await orderModel.find({
         status: 'OPEN',
-        ownerPubKeyHash
+        ownerPubKeyHash: { $regex: new RegExp(`^${ownerPubKeyHash}`)},
+        utxo: { $ne: null}
     })
 
     res.send(orders)
@@ -64,7 +73,8 @@ app.get('/api/orders/closed/:ownerPubKeyHash', async (req, res, next) => {
 
     const orders = await orderModel.find({
         status: 'CLOSED',
-        ownerPubKeyHash
+        ownerPubKeyHash: { $regex: new RegExp(`^${ownerPubKeyHash}`)},
+        utxo: { $ne: null}
     })
 
     res.send(orders)
@@ -73,7 +83,8 @@ app.get('/api/orders/closed/:ownerPubKeyHash', async (req, res, next) => {
 app.get('/api/orders/:paymentPubKeyHash', async (req, res, next) => {
     const { paymentPubKeyHash } = req.params
     const orders = await orderModel.find({
-        ownerPubKeyHash: { $regex: new RegExp(`^${paymentPubKeyHash}`)}
+        ownerPubKeyHash: { $regex: new RegExp(`^${paymentPubKeyHash}`)},
+        status: 'OPEN'
     })
 
     res.send(orders)

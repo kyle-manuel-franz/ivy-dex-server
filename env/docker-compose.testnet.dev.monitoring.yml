@@ -1,0 +1,39 @@
+version: '3.5'
+networks:
+  loki:
+
+services:
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    restart: unless-stopped
+    ports:
+      - 3100:3100
+    volumes:
+      - ./monitoring/dev/config:/etc/loki/config
+      - ./monitoring/dev/loki/index:/opt/loki/index
+      - ./monitoring/dev/loki/chunks:/opt/loki/chunks
+    command: -config.file=/etc/loki/config/loki-config.yml
+    networks:
+      - loki
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/dev/promtail/logs:/var/logs
+      - ./monitoring/dev/config:/etc/promtail/config
+      - ./monitoring/dev/express/log:/logs
+    command: -config.file=/etc/promtail/config/promtail-config.yml
+    networks:
+      - loki
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - 3200:3000
+    volumes:
+      - ./monitoring/dev/grafana:/var/lib/grafana
+    networks:
+      - loki
