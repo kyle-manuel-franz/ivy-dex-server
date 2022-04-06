@@ -24,7 +24,9 @@
     "start:logs": "pm2 start ecosystem.config.js && pm2 logs",
     "stop": "pm2 stop ecosystem.config.js",
     "start:docker": "sudo docker-compose -f env/docker-compose.testnet.dev.yml up",
-    "start:docker:mainnet": "echo \"Have not setup script\""
+    "start:docker:mainnet": "echo \"Have not setup script\"",
+    "start:monitoring": "sudo docker-compose -f env/docker-compose.testnet.dev.monitoring.yml up",
+    "stop:monitoring": "sudo docker-compose -f env/docker-compose.testnet.dev.monitoring.yml down"
   },
   "repository": {
     "type": "git",

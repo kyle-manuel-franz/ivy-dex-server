@@ -116,7 +116,6 @@ app.post('/api/orders/:tx_hash', async (req, res, next) => {
     res.send()
 })
 
-
 app.get('/api/orders/:currencySymbol/:tokenName', async (req, res, next) => {
     const { currencySymbol, tokenName } = req.params
     const orders = await orderModel.find({

@@ -17,3 +17,12 @@ scrape_configs:
         labels:
           job: express_access_logs
           __path__: /logs/access.log
+
+    - job_name: system_application
+      pipeline_stages:
+      static_configs:
+        - targets:
+            - localhost
+          labels:
+            job: express_application_logs
+            __path__: /logs/application/access.log

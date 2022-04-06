@@ -41,3 +41,13 @@ This will create and submit a transaction to blockfrost to mint a coin.
 `node scripts/keys/convert-mnemonic-to-root-key.js -r <recovery file>`
 
 Will return a bech_32 version of a root key for the specified file. 
+
+
+## Grafana
+
+We use Grafana for monitoring an Loki for log management
+
+`npm run start:monitoring`
+
+Will start the docker configuration to run the grafana dashboard. If you don't have a local config, you may need to add permissions for the docker container to modify files and folders in the directory.
+The default username and password is "admin" and "admin". Once you login for the first time, you will be prompted to enter a new password.
