@@ -33,6 +33,30 @@ app.get('/api/tokens', async (req, res, next) => {
     res.send(JSON.stringify(tokens))
 })
 
+app.get('/api/tokens/:currencySymbol/:tokenName/orders/closed', async (
+    req,
+    res,
+    next
+) => {
+    const { currencySymbol, tokenName } = req.params
+    const orders = await orderModel.find({
+        $or: [
+            {
+                'buyerValue.name': tokenName,
+                'buyerValue.currencySymbol': currencySymbol,
+                status: 'CLOSED'
+            },
+            {
+                'sellerValue.name': tokenName,
+                'sellerValue.currencySymbol': currencySymbol,
+                status: 'CLOSED'
+            }
+        ]
+    })
+
+    res.send(orders)
+})
+
 app.get('/api/sync/:tx_hash', async (req, res, next) => {
     const { tx_hash } = req.params
     syncQueue.add({ tx_hash })
