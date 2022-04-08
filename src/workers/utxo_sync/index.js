@@ -15,9 +15,13 @@ const trim = (str, n=2) => {
     return str.substring(n, str.length)
 }
 
+// TODO: add the taker utxos and fees if the taker fees or maker fees are missing
 const synchronizeFeesToOrders = async () => {
 
+}
 
+// Look for the correct tx if there is a missing taker tx hash
+const upsertTakerTxHash = async () => {
 
 }
 
