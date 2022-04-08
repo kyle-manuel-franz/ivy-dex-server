@@ -37,6 +37,7 @@ const orderSchema = new mongoose.Schema({
 
     takerFee: Number,
     takerAddress: String,
+    takerPubKeyHash: String,
     takerUtxo: blockfrostUtxoSchema,
     takerTxHash: String
 

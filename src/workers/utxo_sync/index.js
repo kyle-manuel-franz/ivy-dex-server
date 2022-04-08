@@ -5,7 +5,7 @@ const _ = require('lodash')
 const orderModel = require('../../data/order/model')
 const { initializeMongoDbConnection } = require('../../lib/mongoose')
 const { Buffer } = require('buffer')
-
+const blockfrost = require('../../lib/blockfrost')
 const db = initializeMongoDbConnection()
 
 const ADDRESS_LABEL = '406'
@@ -17,7 +17,42 @@ const trim = (str, n=2) => {
 
 // TODO: add the taker utxos and fees if the taker fees or maker fees are missing
 const synchronizeFeesToOrders = async () => {
+    try{
+        const missingTakerTxFees = await orderModel.find({
+            status: 'CLOSED',
+            takerTxHash: { $ne: null },
+            takerFee: null
+        })
 
+        const missingMakerTxFees = await orderModel.find({
+            txHash: { $ne: null },
+            makerFee: null
+        })
+
+        for(let i = 0; i < missingTakerTxFees.length; i++) {
+            const order = missingTakerTxFees[i]
+
+            const tx = await blockfrost.getTransactionDetails(order.takerTxHash)
+            console.log(tx.fees)
+
+            order.takerFee = tx.fees
+            await order.save()
+        }
+
+        for(let i = 0; i < missingMakerTxFees.length; i++) {
+            const order = missingMakerTxFees[i]
+
+            const tx = await blockfrost.getTransactionDetails(order.txHash)
+            console.log('maker fee:', tx.fees)
+
+            order.makerFee = tx.fees
+            await order.save()
+        }
+
+        await connection.close()
+    } catch (e){
+        console.error(e)
+    }
 }
 
 // Look for the correct tx if there is a missing taker tx hash
@@ -200,6 +235,10 @@ const syncSingleTransaction = async tx_hash => {
             }
         }
     }
+
+}
+
+const syncTakerTransaction = async () => {
 
 }
 

@@ -17,12 +17,16 @@ const orderSchema = require('../../src/data/order/model/schema');
 //     })
 //     .argv;
 
+// implement this for paging
+const getAllTransactions = async (address, txs, page=0) => {
+
+}
+
 (async () => {
     const connection = await createNewMongoDbConnection();
     const orderModel = connection.model('order', orderSchema)
 
     const utxosMap = {}
-    const txsMap = {}
 
     try{
         const unpairedOrders = await orderModel.find({
@@ -38,6 +42,12 @@ const orderSchema = require('../../src/data/order/model/schema');
             let transactionsForTakerAddress = utxosMap[order.takerAddress]
             if(transactionsForTakerAddress == null){
                 transactionsForTakerAddress = await blockfrost.getTransactionsForAddress(order.takerAddress)
+
+                if(transactionsForTakerAddress.length >= 100){
+                    const transactionsForTakerAddress2 = await blockfrost.getTransactionsForAddress(order.takerAddress, 2)
+                    transactionsForTakerAddress = [...transactionsForTakerAddress, ...transactionsForTakerAddress2]
+                }
+
                 utxosMap[order.takerAddress] = transactionsForTakerAddress
             }
 
@@ -54,7 +64,6 @@ const orderSchema = require('../../src/data/order/model/schema');
                 const inputs = tx_utxos.inputs
 
                 const match = _.find(inputs, i => i.tx_hash === order.txHash)
-
                 if(!!match){
                     console.log('This is the Tx of the taker: ', match.tx_hash)
                     order.takerTxHash = tx_hash

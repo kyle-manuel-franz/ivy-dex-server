@@ -30,6 +30,7 @@ const orderSchema = require('../../src/data/order/model/schema');
 
         const missingMakerTxFees = await orderModel.find({
             txHash: { $ne: null },
+            makerFee: null
         })
 
         for(let i = 0; i < missingTakerTxFees.length; i++) {

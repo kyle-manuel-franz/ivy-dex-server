@@ -99,9 +99,12 @@ app.get('/api/orders/closed/:ownerPubKeyHash', async (req, res, next) => {
     // we also want to load trades that were taken off the book for a ownerPubKeyHash
     const orders = await orderModel.find({
         status: 'CLOSED',
-        ownerPubKeyHash: { $regex: new RegExp(`^${ownerPubKeyHash}`)},
+        $or: [
+            { ownerPubKeyHash: { $regex: new RegExp(`^${ownerPubKeyHash}`)} },
+            { takerPubKeyHash: { $regex: new RegExp(`^${ownerPubKeyHash}`)} }
+    ],
         utxo: { $ne: null}
-    })
+    }).sort({ createdAt: -1})
 
     res.send(orders)
 })
@@ -130,10 +133,15 @@ app.post('/api/orders/:tx_hash/cancel', async (req, res, next) => {
 
 app.post('/api/orders/:tx_hash', async (req, res, next) => {
     const { tx_hash } = req.params
-    const { taker_address } = req.body
+    const {
+        taker_address,
+        taker_pub_key_hash,
+        taker_tx
+    } = req.body
     const order = await orderModel.findOne({ txHash: tx_hash })
 
     order.takerAddress = taker_address
+    order.takerPubKeyHash = taker_pub_key_hash
     order.status = 'CLOSED'
     order.closedAt = new Date()
     await order.save()
