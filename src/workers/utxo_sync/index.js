@@ -15,6 +15,12 @@ const trim = (str, n=2) => {
     return str.substring(n, str.length)
 }
 
+const synchronizeFeesToOrders = async () => {
+
+
+
+}
+
 const MAX_SYNC_ATTEMPTS = 100;
 
 const updatePendingTransactions = async () => {

@@ -95,6 +95,8 @@ app.get('/api/orders/open/:ownerPubKeyHash', async (req, res, next) => {
 app.get('/api/orders/closed/:ownerPubKeyHash', async (req, res, next) => {
     const { ownerPubKeyHash } = req.params
 
+    // This only shows orders that were placed on the book
+    // we also want to load trades that were taken off the book for a ownerPubKeyHash
     const orders = await orderModel.find({
         status: 'CLOSED',
         ownerPubKeyHash: { $regex: new RegExp(`^${ownerPubKeyHash}`)},
