@@ -1,6 +1,6 @@
 # Ivy Dex Sever
 Server side application to support ivy dex
-## Running Locally!
+## Running Locally
 
 Install Docker and Docker Compose
 
